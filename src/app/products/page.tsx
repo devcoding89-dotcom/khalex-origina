@@ -7,15 +7,23 @@ import { useStore, Category } from '@/lib/store';
 import { ProductCard } from '@/components/ProductCard';
 import { useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 
 function ProductsContent() {
   const { products } = useStore();
   const searchParams = useSearchParams();
   const categoryFilter = searchParams.get('category') as Category | null;
+  const searchQuery = searchParams.get('search')?.toLowerCase() || '';
 
-  const filteredProducts = categoryFilter && categoryFilter !== 'all'
-    ? products.filter(p => p.category === categoryFilter)
-    : products;
+  const filteredProducts = products.filter(p => {
+    const matchesCategory = !categoryFilter || categoryFilter === 'all' || p.category === categoryFilter;
+    const matchesSearch = !searchQuery || 
+      p.name.toLowerCase().includes(searchQuery) || 
+      p.description.toLowerCase().includes(searchQuery) ||
+      Object.values(p.specs || {}).some(spec => spec.toLowerCase().includes(searchQuery));
+    
+    return matchesCategory && matchesSearch;
+  });
 
   const categories: { label: string; value: Category | 'all' }[] = [
     { label: 'All Gear', value: 'all' },
@@ -35,9 +43,14 @@ function ProductsContent() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
             <div>
               <h1 className="text-5xl font-black uppercase tracking-tighter mb-2">
-                {categoryFilter ? categoryFilter.toUpperCase() : 'THE ARMORY'}
+                {searchQuery ? `SEARCH: "${searchQuery}"` : categoryFilter ? categoryFilter.toUpperCase() : 'THE ARMORY'}
               </h1>
               <div className="h-1 w-24 bg-primary" />
+              {searchQuery && (
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">
+                  Showing {filteredProducts.length} results for your radar sweep
+                </p>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -66,9 +79,11 @@ function ProductsContent() {
             </div>
           ) : (
             <div className="text-center py-24 bg-card rounded-xl border border-dashed border-primary/20">
-              <h3 className="text-2xl font-bold mb-2">No items found in this section</h3>
-              <p className="text-muted-foreground">Check back later for new arrivals.</p>
-              <Button variant="link" className="text-primary uppercase mt-4 font-black">View All Products</Button>
+              <h3 className="text-2xl font-bold mb-2 uppercase">No items found in this section</h3>
+              <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest">Adjust your search parameters or check a different category.</p>
+              <Button asChild variant="link" className="text-primary uppercase mt-4 font-black">
+                <Link href="/products">View All Products</Link>
+              </Button>
             </div>
           )}
         </div>
@@ -76,8 +91,6 @@ function ProductsContent() {
     </div>
   );
 }
-
-import Link from 'next/link';
 
 export default function ProductsPage() {
   return (
