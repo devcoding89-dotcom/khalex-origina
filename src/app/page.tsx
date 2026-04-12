@@ -6,128 +6,107 @@ import { useStore } from '@/lib/store';
 import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ShieldCheck, Zap, MessageSquare, Star } from 'lucide-react';
+import { ArrowRight, Gamepad2 } from 'lucide-react';
 
 export default function Home() {
   const { products } = useStore();
-  const featuredProducts = products.slice(0, 4);
+  const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6);
+
+  const categories = [
+    { label: 'Phones', value: 'phones', icon: '📱' },
+    { label: 'Laptops', value: 'laptops', icon: '💻' },
+    { label: 'Gadgets', value: 'gadgets', icon: '🎮' },
+    { label: 'CoD Accounts', value: 'cod', icon: '🎯' },
+    { label: 'CP Top-up', value: 'cp', icon: '💎' },
+  ];
 
   return (
     <div className="flex flex-col min-h-screen">
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative h-[600px] flex items-center overflow-hidden border-b">
-        <div className="absolute inset-0 bg-gradient-to-r from-background via-background/60 to-transparent z-10" />
-        <div 
-          className="absolute inset-0 z-0 bg-cover bg-center" 
-          style={{ backgroundImage: 'url(https://picsum.photos/seed/hero/1920/1080)' }}
-          data-ai-hint="gaming background"
-        />
-        <div className="container mx-auto px-4 relative z-20">
-          <div className="max-w-2xl">
-            <Badge className="bg-secondary text-secondary-foreground mb-4 uppercase tracking-[0.2em] px-4 py-1">Level Up Your Game</Badge>
-            <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-6 leading-[0.9]">
-              UNLEASH THE <span className="text-primary italic">POWER</span>
-            </h1>
-            <p className="text-xl text-muted-foreground mb-8 font-medium">
-              Premium gaming phones, beastly laptops, and legendary CoD accounts. 
-              The ultimate armory for every professional gamer.
-            </p>
-            <div className="flex flex-wrap gap-4">
-              <Link href="/products">
-                <Button size="lg" className="h-14 px-8 bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase text-lg group">
-                  Enter The Armory <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              </Link>
-              <Button size="lg" variant="outline" className="h-14 px-8 font-black uppercase text-lg border-primary text-primary hover:bg-primary/10">
-                View Accounts
-              </Button>
-            </div>
-          </div>
+      <section className="hero-gradient relative py-24 md:py-32 flex items-center justify-center overflow-hidden border-b border-white/5">
+        <div className="container mx-auto px-4 relative z-10 text-center">
+          <h1 className="text-5xl md:text-8xl font-black mb-6 leading-tight">
+            Level Up Your <span className="text-primary neon-text italic">Gaming</span>
+          </h1>
+          <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto font-medium">
+            Premium gaming phones, laptops, CoD accounts & CP top-up services. 
+            The ultimate armory for professional gamers.
+          </p>
+          <Link href="/products">
+            <Button size="lg" className="h-16 px-12 bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase text-xl group rounded-full">
+              Shop Now <ArrowRight className="ml-2 w-6 h-6 group-hover:translate-x-1 transition-transform" />
+            </Button>
+          </Link>
         </div>
-        <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent z-10" />
       </section>
 
-      {/* Featured Products */}
-      <section className="py-24 bg-card/30">
+      {/* Categories Grid */}
+      <section className="py-24 bg-background">
         <div className="container mx-auto px-4">
-          <div className="flex justify-between items-end mb-12">
-            <div>
-              <h2 className="text-4xl font-black tracking-tighter uppercase mb-2">Featured Gear</h2>
-              <div className="h-1 w-20 bg-primary" />
-            </div>
-            <Link href="/products" className="text-primary hover:underline font-bold uppercase tracking-wider flex items-center gap-2">
-              View All <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featuredProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
+          <h2 className="text-4xl font-black text-center mb-16 uppercase tracking-widest italic">Shop by Category</h2>
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            {categories.map((cat) => (
+              <Link 
+                key={cat.value} 
+                href={`/products?category=${cat.value}`}
+                className="glass rounded-2xl p-8 flex flex-col items-center justify-center transition-all hover:border-primary group"
+              >
+                <span className="text-6xl mb-4 group-hover:scale-110 transition-transform">{cat.icon}</span>
+                <h3 className="text-lg font-black uppercase text-center">{cat.label}</h3>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Trust Badges */}
-      <section className="py-16 border-y">
+      {/* Featured Products */}
+      <section className="py-24 bg-card/30 border-y border-white/5">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card border border-transparent hover:border-primary transition-colors">
-              <ShieldCheck className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Secure Trading</h3>
-              <p className="text-sm text-muted-foreground">Every account and item is hand-verified for your safety.</p>
+          <div className="flex justify-between items-end mb-16">
+            <div>
+              <h2 className="text-5xl font-black italic tracking-tighter uppercase mb-2">Featured Intel</h2>
+              <div className="h-1.5 w-24 bg-primary" />
             </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card border border-transparent hover:border-primary transition-colors">
-              <Zap className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Instant Delivery</h3>
-              <p className="text-sm text-muted-foreground">CP Top-ups delivered within 10 minutes, guaranteed.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card border border-transparent hover:border-primary transition-colors">
-              <MessageSquare className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Direct Support</h3>
-              <p className="text-sm text-muted-foreground">Talk to us directly on WhatsApp for any assistance.</p>
-            </div>
-            <div className="flex flex-col items-center text-center p-6 rounded-lg bg-card border border-transparent hover:border-primary transition-colors">
-              <Star className="w-12 h-12 text-primary mb-4" />
-              <h3 className="text-xl font-bold mb-2">Top Ranks</h3>
-              <p className="text-sm text-muted-foreground">Premium Legendary accounts with ultra-rare skins.</p>
-            </div>
+            <Link href="/products" className="text-primary hover:underline font-black uppercase tracking-widest flex items-center gap-2">
+              View All <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featuredProducts.length > 0 ? (
+              featuredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))
+            ) : (
+              <div className="col-span-full py-20 text-center opacity-50 italic">Decrypting armory data...</div>
+            )}
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto py-12 bg-black">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8">
+      <footer className="mt-auto py-12 bg-card border-t border-white/5">
+        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
           <div className="flex flex-col gap-2">
-            <Link href="/" className="flex items-center gap-2">
-              <Gamepad2 className="w-6 h-6 text-primary" />
-              <span className="text-lg font-headline font-black tracking-tighter">
+            <Link href="/" className="flex items-center gap-2 justify-center md:justify-start">
+              <Gamepad2 className="w-8 h-8 text-primary" />
+              <span className="text-2xl font-headline font-black tracking-tighter">
                 GAME<span className="text-primary">ZONE</span>
               </span>
             </Link>
-            <p className="text-sm text-muted-foreground">© 2024 GameZone Marketplace. Powered by Gamers.</p>
+            <p className="text-sm text-muted-foreground font-medium uppercase tracking-widest">
+              Contact: WhatsApp +1 (234) 567-890
+            </p>
           </div>
-          <div className="flex gap-8 text-sm font-bold uppercase tracking-widest text-muted-foreground">
-            <Link href="#" className="hover:text-primary">Instagram</Link>
-            <Link href="#" className="hover:text-primary">Discord</Link>
-            <Link href="#" className="hover:text-primary">Twitter</Link>
-            <Link href="/admin/login" className="hover:text-primary">Admin Access</Link>
+          <div className="flex gap-8 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+            <Link href="#" className="hover:text-primary transition-colors">Privacy</Link>
+            <Link href="#" className="hover:text-primary transition-colors">Terms</Link>
+            <Link href="/admin/login" className="hover:text-primary transition-colors border-l pl-8 border-white/10">Admin Access</Link>
           </div>
         </div>
       </footer>
     </div>
   );
 }
-
-function Badge({ children, className }: { children: React.ReactNode; className?: string }) {
-  return (
-    <div className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 ${className}`}>
-      {children}
-    </div>
-  );
-}
-
-import { Gamepad2 } from 'lucide-react';
