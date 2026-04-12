@@ -6,11 +6,12 @@ import { useStore } from '@/lib/store';
 import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, Gamepad2, MapPin, Radar, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowRight, Gamepad2, MapPin, Radar, ShieldCheck, Zap, Play } from 'lucide-react';
 
 export default function Home() {
   const { products, settings } = useStore();
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6);
+  const videoProduct = products.find(p => p.videoUrl) || products[0];
 
   const categories = [
     { label: 'Phones', value: 'phones', icon: '📱' },
@@ -92,6 +93,54 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Featured Gear Video Section */}
+      {videoProduct && (
+        <section className="relative h-[600px] md:h-[800px] flex items-center justify-center overflow-hidden">
+          <div className="absolute inset-0 z-0">
+            <div className="absolute inset-0 bg-black/60 z-10" />
+            <video 
+              autoPlay 
+              muted 
+              loop 
+              playsInline 
+              className="w-full h-full object-cover"
+              poster={videoProduct.imageUrl}
+            >
+              <source src={videoProduct.videoUrl || 'https://assets.mixkit.co/videos/preview/mixkit-gaming-setup-with-neon-lights-4240-large.mp4'} type="video/mp4" />
+            </video>
+          </div>
+          
+          <div className="container mx-auto px-4 relative z-20 text-center space-y-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/20 border border-secondary/40 text-secondary text-xs font-black uppercase tracking-[0.3em] backdrop-blur-md">
+              <Play className="w-4 h-4 fill-current" /> Tactical Briefing
+            </div>
+            <h2 className="text-6xl md:text-9xl font-black uppercase italic tracking-tighter leading-none">
+              Featured <span className="text-secondary neon-text">Gear</span>
+            </h2>
+            <div className="max-w-2xl mx-auto">
+              <h3 className="text-2xl md:text-4xl font-black uppercase tracking-tight text-white mb-4">{videoProduct.name}</h3>
+              <p className="text-lg text-muted-foreground uppercase font-bold tracking-widest italic">{videoProduct.description}</p>
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link href={`/products/${videoProduct.id}`}>
+                <Button size="lg" className="h-16 px-12 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-black uppercase text-xl rounded-none border-r-4 border-b-4 border-white">
+                  Equip Now
+                </Button>
+              </Link>
+              <Link href="/products">
+                <Button size="lg" variant="outline" className="h-16 px-12 border-white/20 hover:border-secondary text-white font-black uppercase text-xl rounded-none">
+                  Scout Armory
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Animated Scanning Line */}
+          <div className="absolute inset-x-0 h-1 bg-secondary/30 top-0 animate-[scan_4s_linear_infinite] z-30 pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-t from-background to-transparent z-10" />
+        </section>
+      )}
 
       {/* Featured Products */}
       <section className="py-24 bg-card/30 border-y border-white/5">

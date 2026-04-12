@@ -45,6 +45,7 @@ export interface Product {
   
   // Media & Metadata
   imageUrl: string;
+  videoUrl?: string;
   specs: Record<string, string>;
   tags: string[];
   
@@ -157,6 +158,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     trackInventory: true,
     allowBackorder: false,
     imageUrl: 'https://picsum.photos/seed/rog7/600/400', 
+    videoUrl: 'https://assets.mixkit.co/videos/preview/mixkit-gaming-setup-with-neon-lights-4240-large.mp4',
     specs: { Screen: '6.78"', RAM: '16GB', Storage: '512GB', Refresh: '165Hz' }, 
     isFeatured: true, 
     status: 'active', 
