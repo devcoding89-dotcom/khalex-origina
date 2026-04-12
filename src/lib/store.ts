@@ -4,31 +4,42 @@
 import { useState, useEffect } from 'react';
 
 export type Category = 'phones' | 'laptops' | 'gadgets' | 'cod' | 'cp' | 'all';
+export type OrderStatus = 'pending' | 'processing' | 'ready' | 'shipped' | 'completed' | 'cancelled' | 'refunded' | 'on_hold';
+export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed';
+export type CustomerGroup = 'new' | 'regular' | 'vip' | 'wholesale' | 'blocked';
 
 export interface ProductVariant {
   id: string;
   name: string;
   price: number;
   stock: number;
+  sku?: string;
 }
 
 export interface Product {
   id: string;
   name: string;
+  slug: string;
   category: Category;
   description: string;
   price: number;
   oldPrice?: number;
+  costPrice?: number;
   stock: number;
+  stockAlert: number;
   imageUrl: string;
   specs: Record<string, string>;
   type: 'physical' | 'digital' | 'service';
   isFeatured?: boolean;
-  status: 'active' | 'sold-out';
+  status: 'active' | 'draft' | 'sold_out' | 'discontinued';
   variants?: ProductVariant[];
-  tags?: string[];
+  tags: string[];
   salesCount: number;
+  views: number;
   createdAt: string;
+  updatedAt: string;
+  metaTitle?: string;
+  metaDescription?: string;
 }
 
 export interface CartItem extends Product {
@@ -44,7 +55,16 @@ export interface Customer {
   orderCount: number;
   lastOrderDate: string;
   joinedDate: string;
-  group: 'new' | 'regular' | 'vip';
+  group: CustomerGroup;
+  notes: string[];
+  tags: string[];
+}
+
+export interface OrderTimeline {
+  status: OrderStatus;
+  timestamp: string;
+  by: string;
+  note?: string;
 }
 
 export interface Order {
@@ -57,10 +77,22 @@ export interface Order {
   codIgn?: string;
   items: CartItem[];
   total: number;
-  status: 'pending' | 'processing' | 'completed' | 'cancelled';
-  paymentStatus: 'pending' | 'paid' | 'refunded' | 'failed';
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
   createdAt: string;
-  notes?: string;
+  updatedAt: string;
+  timeline: OrderTimeline[];
+  internalNotes?: string;
+  priority: 'low' | 'normal' | 'high' | 'urgent';
+}
+
+export interface AuditLog {
+  id: string;
+  action: string;
+  target: string;
+  admin: string;
+  timestamp: string;
+  details?: string;
 }
 
 export interface StoreSettings {
@@ -68,16 +100,56 @@ export interface StoreSettings {
   whatsapp: string;
   email: string;
   currencySymbol: string;
-  freeShippingThreshold: number;
+  currencyPosition: 'before' | 'after';
   maintenanceMode: boolean;
   taxRate: number;
+  freeShippingThreshold: number;
+  theme: 'dark' | 'light';
 }
 
 const DEFAULT_PRODUCTS: Product[] = [
-  { id: 'phone-001', name: 'ASUS ROG Phone 7 Ultimate', category: 'phones', type: 'physical', description: 'Snapdragon 8 Gen 2, 165Hz AMOLED display.', price: 999, oldPrice: 1199, stock: 5, imageUrl: 'https://picsum.photos/seed/rog7/600/400', specs: { Screen: '6.78"', RAM: '16GB' }, isFeatured: true, status: 'active', salesCount: 12, createdAt: new Date().toISOString() },
-  { id: 'laptop-001', name: 'ASUS ROG Strix G16', category: 'laptops', type: 'physical', description: 'RTX 4070 gaming laptop.', price: 1799, stock: 4, imageUrl: 'https://picsum.photos/seed/strixg16/600/400', specs: { GPU: 'RTX 4070', CPU: 'i9' }, isFeatured: true, status: 'active', salesCount: 8, createdAt: new Date().toISOString() },
-  { id: 'cod-001', name: 'Legendary Account - Lvl 150', category: 'cod', type: 'digital', description: 'Max level account with multiple mythic weapons.', price: 299, stock: 1, imageUrl: 'https://picsum.photos/seed/acc1/600/400', specs: { Rank: 'Legendary', Level: '150' }, isFeatured: true, status: 'active', salesCount: 2, createdAt: new Date().toISOString() },
-  { id: 'cp-001', name: '5000 + 500 Bonus CP', category: 'cp', type: 'service', description: 'Best value for serious players.', price: 65, stock: 999, imageUrl: 'https://picsum.photos/seed/cp5000/600/400', specs: { Delivery: 'Instant' }, isFeatured: true, status: 'active', salesCount: 45, createdAt: new Date().toISOString() },
+  { 
+    id: 'phone-001', 
+    name: 'ASUS ROG Phone 7 Ultimate', 
+    slug: 'asus-rog-phone-7-ultimate',
+    category: 'phones', 
+    type: 'physical', 
+    description: 'Snapdragon 8 Gen 2, 165Hz AMOLED display.', 
+    price: 999, 
+    oldPrice: 1199, 
+    costPrice: 750,
+    stock: 5, 
+    stockAlert: 2,
+    imageUrl: 'https://picsum.photos/seed/rog7/600/400', 
+    specs: { Screen: '6.78"', RAM: '16GB' }, 
+    isFeatured: true, 
+    status: 'active', 
+    salesCount: 12, 
+    views: 450,
+    tags: ['gaming', 'premium'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  { 
+    id: 'cod-001', 
+    name: 'Legendary Account - Lvl 150', 
+    slug: 'cod-legendary-acc-150',
+    category: 'cod', 
+    type: 'digital', 
+    description: 'Max level account with multiple mythic weapons.', 
+    price: 299, 
+    stock: 1, 
+    stockAlert: 0,
+    imageUrl: 'https://picsum.photos/seed/acc1/600/400', 
+    specs: { Rank: 'Legendary', Level: '150' }, 
+    isFeatured: true, 
+    status: 'active', 
+    salesCount: 2, 
+    views: 890,
+    tags: ['legendary', 'max-level'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
 ];
 
 export function useStore() {
@@ -85,14 +157,17 @@ export function useStore() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [customers, setCustomers] = useState<Customer[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({
     storeName: 'GameZone',
     whatsapp: '+1234567890',
     email: 'admin@gamezone.com',
     currencySymbol: '$',
-    freeShippingThreshold: 500,
+    currencyPosition: 'before',
     maintenanceMode: false,
-    taxRate: 0
+    taxRate: 0,
+    freeShippingThreshold: 500,
+    theme: 'dark'
   });
   const [isInitialized, setIsInitialized] = useState(false);
 
@@ -102,6 +177,7 @@ export function useStore() {
     const savedOrders = localStorage.getItem('gz_orders');
     const savedCustomers = localStorage.getItem('gz_customers');
     const savedSettings = localStorage.getItem('gz_settings');
+    const savedLogs = localStorage.getItem('gz_audit_logs');
 
     if (savedProducts) setProducts(JSON.parse(savedProducts));
     else setProducts(DEFAULT_PRODUCTS);
@@ -110,6 +186,7 @@ export function useStore() {
     if (savedOrders) setOrders(JSON.parse(savedOrders));
     if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
     if (savedSettings) setSettings(JSON.parse(savedSettings));
+    if (savedLogs) setAuditLogs(JSON.parse(savedLogs));
 
     setIsInitialized(true);
   }, []);
@@ -121,12 +198,37 @@ export function useStore() {
       localStorage.setItem('gz_orders', JSON.stringify(orders));
       localStorage.setItem('gz_customers', JSON.stringify(customers));
       localStorage.setItem('gz_settings', JSON.stringify(settings));
+      localStorage.setItem('gz_audit_logs', JSON.stringify(auditLogs));
     }
-  }, [products, cart, orders, customers, settings, isInitialized]);
+  }, [products, cart, orders, customers, settings, auditLogs, isInitialized]);
 
-  const addProduct = (p: Product) => setProducts([...products, { ...p, createdAt: new Date().toISOString(), salesCount: 0 }]);
-  const updateProduct = (p: Product) => setProducts(products.map(item => item.id === p.id ? p : item));
-  const deleteProduct = (id: string) => setProducts(products.filter(p => p.id !== id));
+  const logAction = (action: string, target: string, details?: string) => {
+    const newLog: AuditLog = {
+      id: `log-${Date.now()}`,
+      action,
+      target,
+      admin: 'Commander Admin',
+      timestamp: new Date().toISOString(),
+      details
+    };
+    setAuditLogs(prev => [newLog, ...prev].slice(0, 100));
+  };
+
+  const addProduct = (p: Product) => {
+    setProducts([...products, { ...p, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), salesCount: 0, views: 0 }]);
+    logAction('CREATE_PRODUCT', p.name);
+  };
+
+  const updateProduct = (p: Product) => {
+    setProducts(products.map(item => item.id === p.id ? { ...p, updatedAt: new Date().toISOString() } : item));
+    logAction('UPDATE_PRODUCT', p.name);
+  };
+
+  const deleteProduct = (id: string) => {
+    const p = products.find(item => item.id === id);
+    setProducts(products.filter(p => p.id !== id));
+    if (p) logAction('DELETE_PRODUCT', p.name);
+  };
 
   const addToCart = (p: Product, qty: number = 1) => {
     setCart(prev => {
@@ -143,10 +245,9 @@ export function useStore() {
   };
   const clearCart = () => setCart([]);
 
-  const createOrder = (orderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'items' | 'total' | 'customerId' | 'paymentStatus'>) => {
+  const createOrder = (orderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'items' | 'total' | 'customerId' | 'paymentStatus' | 'timeline' | 'priority'>) => {
     const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
     
-    // Manage Customer
     let customer = customers.find(c => c.whatsapp === orderData.whatsapp);
     if (!customer) {
       customer = {
@@ -158,7 +259,9 @@ export function useStore() {
         orderCount: 1,
         lastOrderDate: new Date().toISOString(),
         joinedDate: new Date().toISOString(),
-        group: 'new'
+        group: 'new',
+        notes: [],
+        tags: []
       };
       setCustomers([...customers, customer]);
     } else {
@@ -167,7 +270,7 @@ export function useStore() {
         totalSpent: c.totalSpent + total,
         orderCount: c.orderCount + 1,
         lastOrderDate: new Date().toISOString(),
-        group: (c.orderCount + 1) > 5 ? 'vip' : 'regular'
+        group: (c.orderCount + 1) > 10 ? 'vip' : 'regular'
       } : c));
     }
 
@@ -179,30 +282,43 @@ export function useStore() {
       total,
       status: 'pending',
       paymentStatus: 'pending',
-      createdAt: new Date().toISOString()
+      priority: 'normal',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      timeline: [{ status: 'pending', timestamp: new Date().toISOString(), by: 'system', note: 'Order Transmission Received' }]
     };
 
-    // Update sales count for products
     setProducts(products.map(p => {
       const cartItem = cart.find(ci => ci.id === p.id);
-      if (cartItem) return { ...p, salesCount: p.salesCount + cartItem.quantity };
+      if (cartItem) return { ...p, salesCount: p.salesCount + cartItem.quantity, stock: p.stock - cartItem.quantity };
       return p;
     }));
 
     setOrders([newOrder, ...orders]);
     clearCart();
+    logAction('NEW_ORDER', newOrder.id, `Amount: $${total}`);
     return newOrder;
   };
 
-  const updateOrderStatus = (id: string, status: Order['status']) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status } : o));
+  const updateOrderStatus = (id: string, status: OrderStatus, note?: string) => {
+    setOrders(orders.map(o => o.id === id ? { 
+      ...o, 
+      status, 
+      updatedAt: new Date().toISOString(),
+      timeline: [...o.timeline, { status, timestamp: new Date().toISOString(), by: 'Commander Admin', note }]
+    } : o));
+    logAction('UPDATE_ORDER_STATUS', id, `New Status: ${status}`);
   };
 
-  const updateOrderPaymentStatus = (id: string, paymentStatus: Order['paymentStatus']) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, paymentStatus } : o));
+  const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
+    setOrders(orders.map(o => o.id === id ? { ...o, paymentStatus, updatedAt: new Date().toISOString() } : o));
+    logAction('UPDATE_PAYMENT_STATUS', id, `New Status: ${paymentStatus}`);
   };
 
-  const updateSettings = (s: StoreSettings) => setSettings(s);
+  const updateSettings = (s: StoreSettings) => {
+    setSettings(s);
+    logAction('UPDATE_SETTINGS', 'Global');
+  };
 
   return {
     products,
@@ -210,6 +326,7 @@ export function useStore() {
     orders,
     customers,
     settings,
+    auditLogs,
     addProduct,
     updateProduct,
     deleteProduct,
@@ -220,6 +337,7 @@ export function useStore() {
     createOrder,
     updateOrderStatus,
     updateOrderPaymentStatus,
-    updateSettings
+    updateSettings,
+    logAction
   };
 }
