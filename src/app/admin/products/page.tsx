@@ -11,8 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Package, Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle } from 'lucide-react';
+import { Package, Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon } from 'lucide-react';
 import { generateProductDescription } from '@/ai/flows/generate-product-description-flow';
 import { useToast } from '@/hooks/use-toast';
 
@@ -124,7 +123,7 @@ function ProductsManagementContent() {
       </div>
 
       {editingProduct ? (
-        <Card className="bg-card border-primary/20 max-w-4xl mx-auto shadow-2xl">
+        <Card className="bg-card border-primary/20 max-w-5xl mx-auto shadow-2xl">
           <CardHeader className="flex flex-row justify-between items-center border-b border-primary/10">
             <CardTitle className="uppercase font-black tracking-widest text-primary italic">Asset Configuration</CardTitle>
             <Button variant="ghost" size="icon" onClick={() => setEditingProduct(null)}>
@@ -133,115 +132,147 @@ function ProductsManagementContent() {
           </CardHeader>
           <CardContent className="pt-8">
             <form onSubmit={handleSave} className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* Image Column */}
+                <div className="space-y-4">
+                  <Label className="uppercase font-black text-[10px] tracking-widest">Asset Visual</Label>
+                  <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center group">
+                    {editingProduct.imageUrl ? (
+                      <img src={editingProduct.imageUrl} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-40" />
+                    ) : (
+                      <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                      <p className="text-[10px] font-black uppercase text-white">Update URL Below</p>
+                    </div>
+                  </div>
                   <div className="space-y-2">
-                    <Label className="uppercase font-black text-[10px] tracking-widest">Asset Name</Label>
+                    <Label className="uppercase font-black text-[8px] tracking-widest text-muted-foreground">Image URL</Label>
                     <Input 
-                      required 
-                      value={editingProduct.name} 
-                      onChange={e => setEditingProduct({...editingProduct, name: e.target.value})}
-                      className="bg-background border-primary/20 h-12"
+                      value={editingProduct.imageUrl} 
+                      onChange={e => setEditingProduct({...editingProduct, imageUrl: e.target.value})}
+                      placeholder="https://images.unsplash.com/..."
+                      className="bg-background border-primary/10 text-xs h-9"
                     />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[10px] tracking-widest">Category</Label>
-                      <Select 
-                        value={editingProduct.category} 
-                        onValueChange={(val: Category) => setEditingProduct({...editingProduct, category: val})}
-                      >
-                        <SelectTrigger className="bg-background h-12 border-primary/20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="phones">Phones</SelectItem>
-                          <SelectItem value="laptops">Laptops</SelectItem>
-                          <SelectItem value="gadgets">Gadgets</SelectItem>
-                          <SelectItem value="cod">Accounts</SelectItem>
-                          <SelectItem value="cp">Top-ups</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[10px] tracking-widest">Type</Label>
-                      <Select 
-                        value={editingProduct.type} 
-                        onValueChange={(val: any) => setEditingProduct({...editingProduct, type: val})}
-                      >
-                        <SelectTrigger className="bg-background h-12 border-primary/20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="physical">Physical</SelectItem>
-                          <SelectItem value="digital">Digital</SelectItem>
-                          <SelectItem value="service">Service</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[10px] tracking-widest">Price ($)</Label>
-                      <Input 
-                        type="number" required 
-                        value={editingProduct.price} 
-                        onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})}
-                        className="bg-background border-primary/20"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[10px] tracking-widest">Stock Units</Label>
-                      <Input 
-                        type="number" 
-                        value={editingProduct.stock || ''} 
-                        onChange={e => setEditingProduct({...editingProduct, stock: Number(e.target.value)})}
-                        className="bg-background border-primary/20"
-                      />
-                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label className="uppercase font-black text-[10px] tracking-widest">Technical Specifications</Label>
-                      <Button type="button" variant="ghost" size="sm" onClick={addSpecRow} className="h-6 text-[10px] uppercase font-black text-primary">
-                        <PlusCircle className="w-3 h-3 mr-1" /> Add Spec
-                      </Button>
+                {/* Info Column */}
+                <div className="lg:col-span-2 space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label className="uppercase font-black text-[10px] tracking-widest">Asset Name</Label>
+                        <Input 
+                          required 
+                          value={editingProduct.name} 
+                          onChange={e => setEditingProduct({...editingProduct, name: e.target.value})}
+                          className="bg-background border-primary/20 h-10"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Category</Label>
+                          <Select 
+                            value={editingProduct.category} 
+                            onValueChange={(val: Category) => setEditingProduct({...editingProduct, category: val})}
+                          >
+                            <SelectTrigger className="bg-background h-10 border-primary/20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="phones">Phones</SelectItem>
+                              <SelectItem value="laptops">Laptops</SelectItem>
+                              <SelectItem value="gadgets">Gadgets</SelectItem>
+                              <SelectItem value="cod">Accounts</SelectItem>
+                              <SelectItem value="cp">Top-ups</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Type</Label>
+                          <Select 
+                            value={editingProduct.type} 
+                            onValueChange={(val: any) => setEditingProduct({...editingProduct, type: val})}
+                          >
+                            <SelectTrigger className="bg-background h-10 border-primary/20">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="physical">Physical</SelectItem>
+                              <SelectItem value="digital">Digital</SelectItem>
+                              <SelectItem value="service">Service</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Price ($)</Label>
+                          <Input 
+                            type="number" required 
+                            value={editingProduct.price} 
+                            onChange={e => setEditingProduct({...editingProduct, price: Number(e.target.value)})}
+                            className="bg-background border-primary/20"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Stock Units</Label>
+                          <Input 
+                            type="number" 
+                            value={editingProduct.stock || ''} 
+                            onChange={e => setEditingProduct({...editingProduct, stock: Number(e.target.value)})}
+                            className="bg-background border-primary/20"
+                          />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2">
-                      {specRows.map((row, i) => (
-                        <div key={i} className="flex gap-2 items-center">
-                          <Input placeholder="Key" value={row.key} onChange={e => updateSpecRow(i, 'key', e.target.value)} className="h-8 text-xs border-primary/10" />
-                          <Input placeholder="Value" value={row.value} onChange={e => updateSpecRow(i, 'value', e.target.value)} className="h-8 text-xs border-primary/10" />
-                          <Button type="button" variant="ghost" size="icon" onClick={() => removeSpecRow(i)} className="h-8 w-8 text-destructive">
-                            <MinusCircle className="w-4 h-4" />
+
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Technical Specifications</Label>
+                          <Button type="button" variant="ghost" size="sm" onClick={addSpecRow} className="h-6 text-[10px] uppercase font-black text-primary">
+                            <PlusCircle className="w-3 h-3 mr-1" /> Add Spec
                           </Button>
                         </div>
-                      ))}
-                      {specRows.length === 0 && <p className="text-[10px] text-muted-foreground uppercase italic text-center py-4">No specifications defined</p>}
+                        <div className="space-y-2 max-h-[160px] overflow-y-auto pr-2">
+                          {specRows.map((row, i) => (
+                            <div key={i} className="flex gap-2 items-center">
+                              <Input placeholder="Key" value={row.key} onChange={e => updateSpecRow(i, 'key', e.target.value)} className="h-8 text-xs border-primary/10" />
+                              <Input placeholder="Value" value={row.value} onChange={e => updateSpecRow(i, 'value', e.target.value)} className="h-8 text-xs border-primary/10" />
+                              <Button type="button" variant="ghost" size="icon" onClick={() => removeSpecRow(i)} className="h-8 w-8 text-destructive">
+                                <MinusCircle className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                          {specRows.length === 0 && <p className="text-[10px] text-muted-foreground uppercase italic text-center py-4">No specifications defined</p>}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Intel Analysis</Label>
+                          <Button type="button" variant="ghost" size="sm" className="h-6 text-secondary font-black text-[10px]" onClick={generateAI} disabled={isGenerating}>
+                            <Sparkles className="w-3 h-3 mr-1" /> {isGenerating ? 'Decrypting...' : 'AI Enhance'}
+                          </Button>
+                        </div>
+                        <Textarea 
+                          rows={3} value={editingProduct.description} 
+                          onChange={e => setEditingProduct({...editingProduct, description: e.target.value})}
+                          className="bg-background border-primary/10 resize-none text-xs"
+                        />
+                      </div>
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-center">
-                      <Label className="uppercase font-black text-[10px] tracking-widest">Intel Analysis</Label>
-                      <Button type="button" variant="ghost" size="sm" className="h-6 text-secondary font-black text-[10px]" onClick={generateAI} disabled={isGenerating}>
-                        <Sparkles className="w-3 h-3 mr-1" /> {isGenerating ? 'Decrypting...' : 'AI Enhance'}
-                      </Button>
-                    </div>
-                    <Textarea 
-                      rows={4} value={editingProduct.description} 
-                      onChange={e => setEditingProduct({...editingProduct, description: e.target.value})}
-                      className="bg-background border-primary/10 resize-none text-xs"
-                    />
                   </div>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-14 bg-primary text-primary-foreground font-black uppercase text-lg tracking-widest hover:shadow-[0_0_30px_rgba(0,255,136,0.3)]">
-                Verify & Store Intelligence
-              </Button>
+              <div className="flex justify-end gap-4 pt-4 border-t border-primary/10">
+                <Button type="button" variant="ghost" onClick={() => setEditingProduct(null)} className="uppercase font-black text-[10px]">Abort</Button>
+                <Button type="submit" className="bg-primary text-primary-foreground font-black uppercase text-xs tracking-widest px-12 hover:shadow-[0_0_30px_rgba(0,255,136,0.3)]">
+                  Verify & Store Intelligence
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

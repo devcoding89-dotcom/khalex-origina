@@ -16,7 +16,7 @@ import {
   PieChart,
   Pie
 } from 'recharts';
-import { TrendingUp, Users, ShoppingBag, Target, ArrowUpRight } from 'lucide-react';
+import { TrendingUp, Users, ShoppingBag, Target, ArrowUpRight, BarChart3 } from 'lucide-react';
 
 export default function AnalyticsPage() {
   const { orders, products, customers } = useStore();
@@ -27,6 +27,15 @@ export default function AnalyticsPage() {
     { name: 'Gadgets', value: 2300, orders: 18 },
     { name: 'Accounts', value: 3400, orders: 22 },
     { name: 'Top-ups', value: 1200, orders: 45 },
+  ];
+
+  const monthlyVolume = [
+    { month: 'Jan', units: 45 },
+    { month: 'Feb', units: 52 },
+    { month: 'Mar', units: 48 },
+    { month: 'Apr', units: 61 },
+    { month: 'May', units: 55 },
+    { month: 'Jun', units: 67 },
   ];
 
   const deviceUsage = [
@@ -91,6 +100,27 @@ export default function AnalyticsPage() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card border-primary/10">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-black uppercase tracking-widest">Monthly Deployment Volume</CardTitle>
+              <BarChart3 className="w-4 h-4 text-secondary" />
+            </CardHeader>
+            <CardContent className="h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyVolume}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#333" vertical={false} />
+                  <XAxis dataKey="month" stroke="#666" fontSize={10} axisLine={false} tickLine={false} />
+                  <YAxis stroke="#666" fontSize={10} axisLine={false} tickLine={false} />
+                  <Tooltip 
+                    contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #00d4ff' }}
+                    itemStyle={{ color: '#00d4ff' }}
+                  />
+                  <Bar dataKey="units" fill="#00d4ff" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
