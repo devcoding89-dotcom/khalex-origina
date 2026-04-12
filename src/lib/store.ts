@@ -114,14 +114,14 @@ const DEFAULT_PRODUCTS: Product[] = [
     slug: 'asus-rog-phone-7-ultimate',
     category: 'phones', 
     type: 'physical', 
-    description: 'Snapdragon 8 Gen 2, 165Hz AMOLED display.', 
-    price: 999000, 
-    oldPrice: 1199000, 
+    description: 'Snapdragon 8 Gen 2, 165Hz AMOLED display. The ultimate gaming powerhouse.', 
+    price: 950000, 
+    oldPrice: 1100000, 
     costPrice: 750000,
     stock: 5, 
     stockAlert: 2,
     imageUrl: 'https://picsum.photos/seed/rog7/600/400', 
-    specs: { Screen: '6.78"', RAM: '16GB' }, 
+    specs: { Screen: '6.78"', RAM: '16GB', Storage: '512GB' }, 
     isFeatured: true, 
     status: 'active', 
     salesCount: 12, 
@@ -131,17 +131,39 @@ const DEFAULT_PRODUCTS: Product[] = [
     updatedAt: new Date().toISOString()
   },
   { 
+    id: 'laptop-001', 
+    name: 'ASUS ROG Strix G16', 
+    slug: 'asus-rog-strix-g16',
+    category: 'laptops', 
+    type: 'physical', 
+    description: 'Intel Core i9, RTX 4070, 240Hz Nebula Display.', 
+    price: 2450000, 
+    oldPrice: 2700000, 
+    costPrice: 1900000,
+    stock: 3, 
+    stockAlert: 1,
+    imageUrl: 'https://picsum.photos/seed/strix/600/400', 
+    specs: { GPU: 'RTX 4070', CPU: 'i9-13980HX', RAM: '32GB' }, 
+    isFeatured: true, 
+    status: 'active', 
+    salesCount: 5, 
+    views: 320,
+    tags: ['laptop', 'pro'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  { 
     id: 'cod-001', 
     name: 'Legendary Account - Lvl 150', 
     slug: 'cod-legendary-acc-150',
     category: 'cod', 
     type: 'digital', 
-    description: 'Max level account with multiple mythic weapons.', 
-    price: 299000, 
+    description: 'Max level account with multiple mythic weapons and rare skins.', 
+    price: 350000, 
     stock: 1, 
     stockAlert: 0,
     imageUrl: 'https://picsum.photos/seed/acc1/600/400', 
-    specs: { Rank: 'Legendary', Level: '150' }, 
+    specs: { Rank: 'Legendary', Level: '150', Mythics: '5' }, 
     isFeatured: true, 
     status: 'active', 
     salesCount: 2, 
@@ -150,6 +172,26 @@ const DEFAULT_PRODUCTS: Product[] = [
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
+  { 
+    id: 'cp-001', 
+    name: '10,000 CP + Bonus', 
+    slug: 'cp-10000-bonus',
+    category: 'cp', 
+    type: 'service', 
+    description: 'Direct top-up to your UID. Guaranteed delivery within 15 minutes.', 
+    price: 125000, 
+    stock: 999, 
+    stockAlert: 50,
+    imageUrl: 'https://picsum.photos/seed/cp10/600/400', 
+    specs: { Amount: '11,500 CP', Method: 'Direct UID' }, 
+    isFeatured: true, 
+    status: 'active', 
+    salesCount: 85, 
+    views: 1200,
+    tags: ['cp', 'topup'],
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
 ];
 
 export function useStore() {
@@ -160,13 +202,13 @@ export function useStore() {
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({
     storeName: 'GameZone',
-    whatsapp: '+1234567890',
-    email: 'admin@gamezone.com',
+    whatsapp: '+2348000000000',
+    email: 'admin@gamezone.ng',
     currencySymbol: '₦',
     currencyPosition: 'before',
     maintenanceMode: false,
     taxRate: 0,
-    freeShippingThreshold: 500,
+    freeShippingThreshold: 500000,
     theme: 'dark'
   });
   const [isInitialized, setIsInitialized] = useState(false);
@@ -185,7 +227,14 @@ export function useStore() {
     if (savedCart) setCart(JSON.parse(savedCart));
     if (savedOrders) setOrders(JSON.parse(savedOrders));
     if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
-    if (savedSettings) setSettings(JSON.parse(savedSettings));
+    
+    if (savedSettings) {
+      const parsed = JSON.parse(savedSettings);
+      // Force Naira if not set correctly in local storage from previous sessions
+      if (parsed.currencySymbol === '$') parsed.currencySymbol = '₦';
+      setSettings(parsed);
+    }
+    
     if (savedLogs) setAuditLogs(JSON.parse(savedLogs));
 
     setIsInitialized(true);
@@ -296,7 +345,7 @@ export function useStore() {
 
     setOrders([newOrder, ...orders]);
     clearCart();
-    logAction('NEW_ORDER', newOrder.id, `Amount: ₦${total.toLocaleString()}`);
+    logAction('NEW_ORDER', newOrder.id, `Amount: ${settings.currencySymbol}${total.toLocaleString()}`);
     return newOrder;
   };
 
