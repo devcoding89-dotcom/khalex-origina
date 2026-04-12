@@ -3,10 +3,15 @@
 
 import { useState, useEffect } from 'react';
 
+// --- DATABASE TYPES & SCHEMAS ---
+
 export type Category = 'phones' | 'laptops' | 'gadgets' | 'cod' | 'cp' | 'all';
+export type ProductType = 'physical' | 'digital' | 'service';
+export type ProductStatus = 'active' | 'draft' | 'sold_out' | 'discontinued';
 export type OrderStatus = 'pending' | 'processing' | 'ready' | 'shipped' | 'completed' | 'cancelled' | 'refunded' | 'on_hold';
 export type PaymentStatus = 'pending' | 'paid' | 'refunded' | 'failed';
 export type CustomerGroup = 'new' | 'regular' | 'vip' | 'wholesale' | 'blocked';
+export type OrderPriority = 'low' | 'normal' | 'high' | 'urgent';
 
 export interface ProductVariant {
   id: string;
@@ -17,29 +22,46 @@ export interface ProductVariant {
 }
 
 export interface Product {
+  // Identity & Basic Info
   id: string;
+  sku: string;
   name: string;
   slug: string;
   category: Category;
+  subcategory?: string;
+  type: ProductType;
   description: string;
+  
+  // Pricing
   price: number;
   oldPrice?: number;
-  costPrice?: number;
+  costPrice: number; // For profit calculation
+  
+  // Inventory
   stock: number;
   stockAlert: number;
+  trackInventory: boolean;
+  allowBackorder: boolean;
+  
+  // Media & Metadata
   imageUrl: string;
   specs: Record<string, string>;
-  type: 'physical' | 'digital' | 'service';
-  isFeatured?: boolean;
-  status: 'active' | 'draft' | 'sold_out' | 'discontinued';
-  variants?: ProductVariant[];
   tags: string[];
+  
+  // Status & Marketing
+  status: ProductStatus;
+  isFeatured: boolean;
+  isNewArrival?: boolean;
   salesCount: number;
   views: number;
-  createdAt: string;
-  updatedAt: string;
+  
+  // SEO
   metaTitle?: string;
   metaDescription?: string;
+  
+  // History
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CartItem extends Product {
@@ -56,8 +78,9 @@ export interface Customer {
   lastOrderDate: string;
   joinedDate: string;
   group: CustomerGroup;
+  riskScore: 'low' | 'medium' | 'high';
+  ipHistory: string[];
   notes: string[];
-  tags: string[];
 }
 
 export interface OrderTimeline {
@@ -69,21 +92,27 @@ export interface OrderTimeline {
 
 export interface Order {
   id: string;
+  displayId: string;
   customerId: string;
-  customerName: string;
-  whatsapp: string;
-  email?: string;
+  customerSnapshot: {
+    name: string;
+    whatsapp: string;
+    email?: string;
+  };
   codUid?: string;
   codIgn?: string;
   items: CartItem[];
+  subtotal: number;
+  tax: number;
   total: number;
+  profit: number; // total - (costPrice * qty)
   status: OrderStatus;
   paymentStatus: PaymentStatus;
+  priority: OrderPriority;
+  internalNotes?: string;
   createdAt: string;
   updatedAt: string;
   timeline: OrderTimeline[];
-  internalNotes?: string;
-  priority: 'low' | 'normal' | 'high' | 'urgent';
 }
 
 export interface AuditLog {
@@ -93,6 +122,7 @@ export interface AuditLog {
   admin: string;
   timestamp: string;
   details?: string;
+  ip?: string;
 }
 
 export interface StoreSettings {
@@ -108,92 +138,110 @@ export interface StoreSettings {
   theme: 'dark' | 'light';
 }
 
+// --- DEFAULT DATA SEED ---
+
 const DEFAULT_PRODUCTS: Product[] = [
   { 
     id: 'phone-001', 
+    sku: 'PHN-ROG7-ULT',
     name: 'ASUS ROG Phone 7 Ultimate', 
     slug: 'asus-rog-phone-7-ultimate',
     category: 'phones', 
     type: 'physical', 
-    description: 'Snapdragon 8 Gen 2, 165Hz AMOLED display. The ultimate gaming powerhouse.', 
+    description: 'The absolute pinnacle of mobile gaming. Snapdragon 8 Gen 2, 165Hz AMOLED, and the AeroActive Portal.', 
     price: 950000, 
     oldPrice: 1100000, 
-    costPrice: 750000,
+    costPrice: 780000,
     stock: 5, 
     stockAlert: 2,
+    trackInventory: true,
+    allowBackorder: false,
     imageUrl: 'https://picsum.photos/seed/rog7/600/400', 
-    specs: { Screen: '6.78"', RAM: '16GB', Storage: '512GB' }, 
+    specs: { Screen: '6.78"', RAM: '16GB', Storage: '512GB', Refresh: '165Hz' }, 
     isFeatured: true, 
     status: 'active', 
     salesCount: 12, 
     views: 450,
-    tags: ['gaming', 'premium'],
+    tags: ['gaming', 'premium', 'flagship'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   { 
     id: 'laptop-001', 
+    sku: 'LAP-STRIX-G16',
     name: 'ASUS ROG Strix G16', 
     slug: 'asus-rog-strix-g16',
     category: 'laptops', 
     type: 'physical', 
-    description: 'Intel Core i9, RTX 4070, 240Hz Nebula Display.', 
+    description: 'Intel Core i9-13980HX, RTX 4070, and a stunning 240Hz Nebula Display.', 
     price: 2450000, 
     oldPrice: 2700000, 
-    costPrice: 1900000,
+    costPrice: 2100000,
     stock: 3, 
     stockAlert: 1,
+    trackInventory: true,
+    allowBackorder: true,
     imageUrl: 'https://picsum.photos/seed/strix/600/400', 
-    specs: { GPU: 'RTX 4070', CPU: 'i9-13980HX', RAM: '32GB' }, 
+    specs: { GPU: 'RTX 4070', CPU: 'i9-13980HX', RAM: '32GB', Storage: '1TB SSD' }, 
     isFeatured: true, 
     status: 'active', 
     salesCount: 5, 
     views: 320,
-    tags: ['laptop', 'pro'],
+    tags: ['laptop', 'pro', 'rtx'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   { 
     id: 'cod-001', 
+    sku: 'DIG-COD-L150',
     name: 'Legendary Account - Lvl 150', 
     slug: 'cod-legendary-acc-150',
     category: 'cod', 
     type: 'digital', 
-    description: 'Max level account with multiple mythic weapons and rare skins.', 
+    description: 'Max level account with multiple mythic weapons, rare camos, and Legendary rank status.', 
     price: 350000, 
+    costPrice: 200000,
     stock: 1, 
     stockAlert: 0,
+    trackInventory: true,
+    allowBackorder: false,
     imageUrl: 'https://picsum.photos/seed/acc1/600/400', 
-    specs: { Rank: 'Legendary', Level: '150', Mythics: '5' }, 
+    specs: { Rank: 'Legendary', Level: '150', Mythics: '5', Region: 'Global' }, 
     isFeatured: true, 
     status: 'active', 
     salesCount: 2, 
     views: 890,
-    tags: ['legendary', 'max-level'],
+    tags: ['legendary', 'max-level', 'mythic'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   },
   { 
     id: 'cp-001', 
+    sku: 'SRV-CP-10K',
     name: '10,000 CP + Bonus', 
     slug: 'cp-10000-bonus',
     category: 'cp', 
     type: 'service', 
-    description: 'Direct top-up to your UID. Guaranteed delivery within 15 minutes.', 
+    description: 'Direct top-up to your player UID. Fast delivery guaranteed.', 
     price: 125000, 
+    costPrice: 110000,
     stock: 999, 
     stockAlert: 50,
+    trackInventory: false,
+    allowBackorder: true,
     imageUrl: 'https://picsum.photos/seed/cp10/600/400', 
-    specs: { Amount: '11,500 CP', Method: 'Direct UID' }, 
+    specs: { Amount: '11,500 CP', Method: 'Direct UID', Time: '5-15 mins' }, 
     isFeatured: true, 
     status: 'active', 
     salesCount: 85, 
     views: 1200,
-    tags: ['cp', 'topup'],
+    tags: ['cp', 'topup', 'fast'],
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   }
 ];
+
+// --- STORE HOOK ---
 
 export function useStore() {
   const [products, setProducts] = useState<Product[]>([]);
@@ -232,15 +280,13 @@ export function useStore() {
     
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
-      // Force Naira if not set correctly in local storage from previous sessions
-      if (parsed.currencySymbol === '$') parsed.currencySymbol = '₦';
-      // Ensure new name is reflected if it's the first reload after rebranding
       setSettings({
         ...parsed,
         storeName: 'KHALEX hub',
         whatsapp: '09166905298',
         email: 'khaleedadefemi1@gmail.com',
         address: 'no7 hiltop estate aboru lagos',
+        currencySymbol: '₦'
       });
     }
     
@@ -265,15 +311,16 @@ export function useStore() {
       id: `log-${Date.now()}`,
       action,
       target,
-      admin: 'Commander Admin',
+      admin: localStorage.getItem('gz_admin_user') || 'System',
       timestamp: new Date().toISOString(),
-      details
+      details,
+      ip: '127.0.0.1'
     };
-    setAuditLogs(prev => [newLog, ...prev].slice(0, 100));
+    setAuditLogs(prev => [newLog, ...prev].slice(0, 500));
   };
 
   const addProduct = (p: Product) => {
-    setProducts([...products, { ...p, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), salesCount: 0, views: 0 }]);
+    setProducts([...products, { ...p, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() }]);
     logAction('CREATE_PRODUCT', p.name);
   };
 
@@ -303,9 +350,17 @@ export function useStore() {
   };
   const clearCart = () => setCart([]);
 
-  const createOrder = (orderData: Omit<Order, 'id' | 'status' | 'createdAt' | 'updatedAt' | 'items' | 'total' | 'customerId' | 'paymentStatus' | 'timeline' | 'priority'>) => {
-    const total = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-    
+  const createOrder = (orderData: { 
+    customerName: string; 
+    whatsapp: string; 
+    email?: string; 
+    codUid?: string; 
+    codIgn?: string; 
+  }) => {
+    const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+    const profit = cart.reduce((acc, item) => acc + ((item.price - (item.costPrice || 0)) * item.quantity), 0);
+    const total = subtotal; // Simpler for MVP, could add tax/shipping
+
     let customer = customers.find(c => c.whatsapp === orderData.whatsapp);
     if (!customer) {
       customer = {
@@ -318,8 +373,9 @@ export function useStore() {
         lastOrderDate: new Date().toISOString(),
         joinedDate: new Date().toISOString(),
         group: 'new',
-        notes: [],
-        tags: []
+        riskScore: 'low',
+        ipHistory: ['127.0.0.1'],
+        notes: []
       };
       setCustomers([...customers, customer]);
     } else {
@@ -328,33 +384,50 @@ export function useStore() {
         totalSpent: c.totalSpent + total,
         orderCount: c.orderCount + 1,
         lastOrderDate: new Date().toISOString(),
-        group: (c.orderCount + 1) > 10 ? 'vip' : 'regular'
+        group: (c.totalSpent + total) > 5000000 ? 'vip' : 'regular'
       } : c));
     }
 
     const newOrder: Order = {
-      ...orderData,
       id: `ORD-${Date.now()}`,
+      displayId: `#${Date.now().toString().slice(-4)}`,
       customerId: customer.id,
+      customerSnapshot: {
+        name: orderData.customerName,
+        whatsapp: orderData.whatsapp,
+        email: orderData.email
+      },
+      codUid: orderData.codUid,
+      codIgn: orderData.codIgn,
       items: [...cart],
+      subtotal,
+      tax: 0,
       total,
+      profit,
       status: 'pending',
       paymentStatus: 'pending',
       priority: 'normal',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      timeline: [{ status: 'pending', timestamp: new Date().toISOString(), by: 'system', note: 'Order Transmission Received' }]
+      timeline: [{ 
+        status: 'pending', 
+        timestamp: new Date().toISOString(), 
+        by: 'System', 
+        note: 'Strategic order received and logged.' 
+      }]
     };
 
     setProducts(products.map(p => {
       const cartItem = cart.find(ci => ci.id === p.id);
-      if (cartItem) return { ...p, salesCount: p.salesCount + cartItem.quantity, stock: p.stock - cartItem.quantity };
+      if (cartItem && p.trackInventory) {
+        return { ...p, salesCount: p.salesCount + cartItem.quantity, stock: p.stock - cartItem.quantity };
+      }
       return p;
     }));
 
     setOrders([newOrder, ...orders]);
     clearCart();
-    logAction('NEW_ORDER', newOrder.id, `Amount: ${settings.currencySymbol}${total.toLocaleString()}`);
+    logAction('NEW_ORDER', newOrder.displayId, `Value: ${settings.currencySymbol}${total.toLocaleString()}`);
     return newOrder;
   };
 
@@ -363,19 +436,24 @@ export function useStore() {
       ...o, 
       status, 
       updatedAt: new Date().toISOString(),
-      timeline: [...o.timeline, { status, timestamp: new Date().toISOString(), by: 'Commander Admin', note }]
+      timeline: [...o.timeline, { 
+        status, 
+        timestamp: new Date().toISOString(), 
+        by: localStorage.getItem('gz_admin_user') || 'Admin', 
+        note 
+      }]
     } : o));
-    logAction('UPDATE_ORDER_STATUS', id, `New Status: ${status}`);
+    logAction('UPDATE_ORDER_STATUS', id, `Status moved to: ${status}`);
   };
 
   const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
     setOrders(orders.map(o => o.id === id ? { ...o, paymentStatus, updatedAt: new Date().toISOString() } : o));
-    logAction('UPDATE_PAYMENT_STATUS', id, `New Status: ${paymentStatus}`);
+    logAction('UPDATE_PAYMENT_STATUS', id, `Payment marked as: ${paymentStatus}`);
   };
 
   const updateSettings = (s: StoreSettings) => {
     setSettings(s);
-    logAction('UPDATE_SETTINGS', 'Global');
+    logAction('UPDATE_SETTINGS', 'Store Core');
   };
 
   return {
@@ -395,7 +473,6 @@ export function useStore() {
     createOrder,
     updateOrderStatus,
     updateOrderPaymentStatus,
-    updateSettings,
-    logAction
+    updateSettings
   };
 }
