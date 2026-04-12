@@ -1,0 +1,35 @@
+
+{
+  "placeholderImages": [
+    {
+      "id": "gaming-phone",
+      "description": "Powerful gaming smartphone with high refresh rate screen",
+      "imageUrl": "https://picsum.photos/seed/gp1/600/400",
+      "imageHint": "gaming smartphone"
+    },
+    {
+      "id": "gaming-laptop",
+      "description": "High-end gaming laptop with RGB keyboard",
+      "imageUrl": "https://picsum.photos/seed/gl1/600/400",
+      "imageHint": "gaming laptop"
+    },
+    {
+      "id": "gaming-headset",
+      "description": "Pro gaming headset with noise cancellation",
+      "imageUrl": "https://picsum.photos/seed/gh1/600/400",
+      "imageHint": "gaming headset"
+    },
+    {
+      "id": "cod-account",
+      "description": "Call of Duty account with legendary skins",
+      "imageUrl": "https://picsum.photos/seed/cod1/600/400",
+      "imageHint": "gaming account"
+    },
+    {
+      "id": "cp-topup",
+      "description": "COD Points top-up pack icon",
+      "imageUrl": "https://picsum.photos/seed/cp1/600/400",
+      "imageHint": "game currency"
+    }
+  ]
+}
