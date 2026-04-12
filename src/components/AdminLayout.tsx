@@ -32,12 +32,20 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
-  const [currentTime, setCurrentTime] = useState(new Date());
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
 
   useEffect(() => {
+    // Check authentication
     const auth = localStorage.getItem('gz_admin_auth');
-    if (auth !== 'true') router.push('/admin/login');
+    if (auth !== 'true') {
+      router.replace('/admin/login');
+    } else {
+      setIsAuthorized(true);
+    }
     
+    // Set time on client only to avoid hydration mismatch
+    setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, [router]);
@@ -56,6 +64,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     localStorage.removeItem('gz_admin_auth');
     router.push('/admin/login');
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Gamepad2 className="w-12 h-12 text-primary animate-bounce" />
+          <p className="text-primary font-headline uppercase tracking-widest animate-pulse">Initializing Secure Uplink...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
@@ -115,7 +134,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             </Button>
             <div className="hidden lg:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground">
               <Clock className="w-3 h-3 text-primary" />
-              {currentTime.toLocaleTimeString()} | {currentTime.toLocaleDateString()}
+              {currentTime ? `${currentTime.toLocaleTimeString()} | ${currentTime.toLocaleDateString()}` : '--:--:--'}
             </div>
           </div>
 
@@ -127,10 +146,12 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 className="bg-background border border-primary/10 rounded-full h-10 pl-10 pr-4 text-sm w-64 focus:outline-none focus:border-primary transition-all"
               />
             </div>
-            <Button variant="ghost" size="icon" className="relative">
-              <Bell className="w-5 h-5" />
-              <Badge className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center bg-primary text-primary-foreground text-[8px]">3</Badge>
-            </Button>
+            <Link href="/admin/notifications">
+              <Button variant="ghost" size="icon" className="relative">
+                <Bell className="w-5 h-5" />
+                <Badge className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center bg-primary text-primary-foreground text-[8px]">3</Badge>
+              </Button>
+            </Link>
             <div className="flex items-center gap-3 pl-6 border-l border-primary/10">
               <div className="text-right">
                 <div className="text-xs font-black uppercase">Commander Admin</div>
