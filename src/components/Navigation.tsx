@@ -9,7 +9,7 @@ import { Badge } from './ui/badge';
 import { useState } from 'react';
 
 export function Navigation() {
-  const { cart } = useStore();
+  const { cart, settings } = useStore();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -27,7 +27,7 @@ export function Navigation() {
         <Link href="/" className="flex items-center gap-2 group">
           <Gamepad2 className="w-10 h-10 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_12px_rgba(0,255,136,0.5)]" />
           <span className="text-2xl font-headline font-black tracking-tighter italic">
-            🔥 GAME<span className="text-primary neon-text">ZONE</span>
+            {settings.storeName.split(' ')[0]}<span className="text-primary neon-text">{settings.storeName.split(' ').slice(1).join(' ')}</span>
           </span>
         </Link>
 

@@ -6,10 +6,10 @@ import { useStore } from '@/lib/store';
 import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, Gamepad2 } from 'lucide-react';
+import { ArrowRight, Gamepad2, MapPin } from 'lucide-react';
 
 export default function Home() {
-  const { products } = useStore();
+  const { products, settings } = useStore();
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6);
 
   const categories = [
@@ -32,7 +32,7 @@ export default function Home() {
           </h1>
           <p className="text-xl md:text-2xl text-muted-foreground mb-10 max-w-2xl mx-auto font-medium">
             Premium gaming phones, laptops, CoD accounts & CP top-up services. 
-            The ultimate armory for professional gamers.
+            The ultimate armory for professional gamers at {settings.storeName}.
           </p>
           <Link href="/products">
             <Button size="lg" className="h-16 px-12 bg-primary text-primary-foreground hover:bg-primary/90 font-black uppercase text-xl group rounded-full">
@@ -88,19 +88,40 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="mt-auto py-12 bg-card border-t border-white/5">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
-          <div className="flex flex-col gap-2">
+        <div className="container mx-auto px-4 grid grid-cols-1 md:grid-cols-3 gap-12 text-center md:text-left">
+          <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2 justify-center md:justify-start">
               <Gamepad2 className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-headline font-black tracking-tighter">
-                GAME<span className="text-primary">ZONE</span>
+              <span className="text-2xl font-headline font-black tracking-tighter uppercase">
+                {settings.storeName.split(' ')[0]}<span className="text-primary">{settings.storeName.split(' ').slice(1).join(' ')}</span>
               </span>
             </Link>
             <p className="text-sm text-muted-foreground font-medium uppercase tracking-widest">
-              Contact: WhatsApp +1 (234) 567-890
+              Premium gaming marketplace for elite assets.
             </p>
           </div>
-          <div className="flex gap-8 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground">
+          
+          <div className="flex flex-col gap-4">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary">Mission Support</h4>
+            <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+              <p className="uppercase font-bold tracking-widest">WhatsApp: {settings.whatsapp}</p>
+              <p className="uppercase font-bold tracking-widest">Email: {settings.email}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <h4 className="text-xs font-black uppercase tracking-widest text-primary">Base Location</h4>
+            <div className="flex items-center gap-2 justify-center md:justify-start text-sm text-muted-foreground">
+              <MapPin className="w-4 h-4 text-primary" />
+              <p className="uppercase font-bold tracking-widest leading-relaxed">
+                {settings.address}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div className="container mx-auto px-4 mt-12 pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4 text-xs font-black uppercase tracking-[0.2em] text-muted-foreground/50">
+          <p>© {new Date().getFullYear()} {settings.storeName}. ALL RIGHTS RESERVED.</p>
+          <div className="flex gap-8">
             <Link href="#" className="hover:text-primary transition-colors">Privacy</Link>
             <Link href="#" className="hover:text-primary transition-colors">Terms</Link>
             <Link href="/admin/login" className="hover:text-primary transition-colors border-l pl-8 border-white/10">Admin Access</Link>

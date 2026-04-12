@@ -99,6 +99,7 @@ export interface StoreSettings {
   storeName: string;
   whatsapp: string;
   email: string;
+  address: string;
   currencySymbol: string;
   currencyPosition: 'before' | 'after';
   maintenanceMode: boolean;
@@ -201,9 +202,10 @@ export function useStore() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [settings, setSettings] = useState<StoreSettings>({
-    storeName: 'GameZone',
-    whatsapp: '+2348000000000',
-    email: 'admin@gamezone.ng',
+    storeName: 'KHALEX hub',
+    whatsapp: '09166905298',
+    email: 'khaleedadefemi1@gmail.com',
+    address: 'no7 hiltop estate aboru lagos',
     currencySymbol: '₦',
     currencyPosition: 'before',
     maintenanceMode: false,
@@ -232,7 +234,14 @@ export function useStore() {
       const parsed = JSON.parse(savedSettings);
       // Force Naira if not set correctly in local storage from previous sessions
       if (parsed.currencySymbol === '$') parsed.currencySymbol = '₦';
-      setSettings(parsed);
+      // Ensure new name is reflected if it's the first reload after rebranding
+      setSettings({
+        ...parsed,
+        storeName: 'KHALEX hub',
+        whatsapp: '09166905298',
+        email: 'khaleedadefemi1@gmail.com',
+        address: 'no7 hiltop estate aboru lagos',
+      });
     }
     
     if (savedLogs) setAuditLogs(JSON.parse(savedLogs));

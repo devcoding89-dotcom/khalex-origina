@@ -4,8 +4,8 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'GameZone Marketplace - Premium Gaming Store',
-  description: 'Phones, Laptops, CoD Accounts and CP Top-up for Pro Gamers',
+  title: 'KHALEX hub - Premium Gaming Marketplace',
+  description: 'Phones, Laptops, CoD Accounts and CP Top-up for Pro Gamers. High quality gaming assets.',
 };
 
 export default function RootLayout({
