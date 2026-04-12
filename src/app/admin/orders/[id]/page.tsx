@@ -23,12 +23,13 @@ import {
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 export default function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const router = useRouter();
   const { toast } = useToast();
-  const { orders, updateOrderStatus, updateOrderPaymentStatus } = useStore();
+  const { orders, updateOrderStatus, updateOrderPaymentStatus, settings } = useStore();
   const [order, setOrder] = useState<Order | null>(null);
 
   useEffect(() => {
@@ -69,7 +70,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {/* Mission Intel */}
             <Card className="bg-card border-primary/20">
               <CardHeader className="border-b border-primary/5">
                 <div className="flex justify-between items-center">
@@ -117,7 +117,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                             <div className="text-[9px] text-muted-foreground uppercase">{item.category} | Qty: {item.quantity}</div>
                           </div>
                         </div>
-                        <div className="text-sm font-black text-primary">${item.price * item.quantity}</div>
+                        <div className="text-sm font-black text-primary">{settings.currencySymbol}{(item.price * item.quantity).toLocaleString()}</div>
                       </div>
                     ))}
                   </div>
@@ -125,11 +125,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </CardContent>
               <CardFooter className="bg-muted/10 border-t border-primary/5 p-6 flex justify-between items-center">
                 <div className="text-xl font-black uppercase italic">Total Settlement</div>
-                <div className="text-3xl font-black text-primary italic tracking-tighter">${order.total}</div>
+                <div className="text-3xl font-black text-primary italic tracking-tighter">{settings.currencySymbol}{order.total.toLocaleString()}</div>
               </CardFooter>
             </Card>
 
-            {/* Timeline */}
             <Card className="bg-card border-primary/10">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
@@ -159,7 +158,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div className="space-y-8">
-            {/* Personnel Intel */}
             <Card className="bg-card border-primary/10 overflow-hidden">
               <CardHeader className="bg-muted/30 border-b">
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
@@ -193,7 +191,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
               </CardContent>
             </Card>
 
-            {/* Command Actions */}
             <Card className="bg-card border-primary/20">
               <CardHeader>
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest">Command Protocol</CardTitle>

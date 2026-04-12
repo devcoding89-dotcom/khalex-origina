@@ -11,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ShoppingCart, Eye } from 'lucide-react';
 
 export function ProductCard({ product }: { product: Product }) {
-  const { addToCart } = useStore();
+  const { addToCart, settings } = useStore();
   const { toast } = useToast();
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -62,9 +62,9 @@ export function ProductCard({ product }: { product: Product }) {
           {product.description}
         </p>
         <div className="flex items-center gap-3">
-          <span className="text-2xl font-black text-primary italic tracking-tighter">${product.price}</span>
+          <span className="text-2xl font-black text-primary italic tracking-tighter">{settings.currencySymbol}{product.price.toLocaleString()}</span>
           {product.oldPrice && (
-            <span className="text-sm line-through text-muted-foreground font-bold">${product.oldPrice}</span>
+            <span className="text-sm line-through text-muted-foreground font-bold">{settings.currencySymbol}{product.oldPrice.toLocaleString()}</span>
           )}
         </div>
       </CardContent>

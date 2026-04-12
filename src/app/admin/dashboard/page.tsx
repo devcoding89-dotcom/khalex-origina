@@ -32,23 +32,22 @@ import {
 } from 'recharts';
 
 export default function Dashboard() {
-  const { products, orders, customers, auditLogs } = useStore();
+  const { products, orders, customers, auditLogs, settings } = useStore();
 
   const totalRevenue = orders.filter(o => o.status !== 'cancelled').reduce((acc, o) => acc + o.total, 0);
   const pendingCount = orders.filter(o => o.status === 'pending').length;
   const lowStockCount = products.filter(p => p.stock <= p.stockAlert).length;
-  const monthlyRevenueGoal = 10000;
+  const monthlyRevenueGoal = 10000000;
   const progressToGoal = Math.min(100, (totalRevenue / monthlyRevenueGoal) * 100);
 
-  // Mock Sales Data
   const salesData = [
-    { name: 'Mon', sales: 4200 },
-    { name: 'Tue', sales: 3800 },
-    { name: 'Wed', sales: 5100 },
-    { name: 'Thu', sales: 4800 },
-    { name: 'Fri', sales: 6200 },
-    { name: 'Sat', sales: 7500 },
-    { name: 'Sun', sales: 6900 },
+    { name: 'Mon', sales: 420000 },
+    { name: 'Tue', sales: 380000 },
+    { name: 'Wed', sales: 510000 },
+    { name: 'Thu', sales: 480000 },
+    { name: 'Fri', sales: 620000 },
+    { name: 'Sat', sales: 750000 },
+    { name: 'Sun', sales: 690000 },
   ];
 
   const categoryData = [
@@ -61,7 +60,7 @@ export default function Dashboard() {
   const COLORS = ['#00ff88', '#00d4ff', '#ffaa00', '#ff4444'];
 
   const stats = [
-    { label: 'Total Revenue', value: `$${totalRevenue.toLocaleString()}`, icon: TrendingUp, change: '+14.2%', isUp: true },
+    { label: 'Total Revenue', value: `${settings.currencySymbol}${totalRevenue.toLocaleString()}`, icon: TrendingUp, change: '+14.2%', isUp: true },
     { label: 'Pending Missions', value: pendingCount, icon: Clock, change: '-2 Units', isUp: false },
     { label: 'Asset Inventory', value: products.length, icon: Package, change: '+5 Units', isUp: true },
     { label: 'Personnel Count', value: customers.length, icon: Users, change: '+12%', isUp: true },
@@ -86,7 +85,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat) => (
             <Card key={stat.label} className="bg-card border-primary/20 hover:border-primary transition-all group overflow-hidden relative">
@@ -106,7 +104,6 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card className="lg:col-span-2 bg-card border-primary/10">
             <CardHeader className="flex flex-row items-center justify-between">
@@ -130,6 +127,7 @@ export default function Dashboard() {
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #00ff88', borderRadius: '8px' }}
                     itemStyle={{ color: '#00ff88', fontWeight: 'bold' }}
+                    formatter={(value: number) => [`${settings.currencySymbol}${value.toLocaleString()}`, 'Revenue']}
                   />
                   <Area type="monotone" dataKey="sales" stroke="#00ff88" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
                 </AreaChart>
@@ -172,7 +170,6 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* Lower Row: Audit Logs & Critical Alerts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-card border-primary/10 overflow-hidden">
             <CardHeader className="bg-muted/30 border-b">

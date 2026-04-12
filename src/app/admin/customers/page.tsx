@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Search, Mail, Phone, ShoppingBag, TrendingUp, UserCheck, UserPlus, Filter, Download } from 'lucide-react';
 
 export default function CustomersPage() {
-  const { customers } = useStore();
+  const { customers, settings } = useStore();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredCustomers = customers.filter(c => 
@@ -38,7 +38,6 @@ export default function CustomersPage() {
           </Button>
         </div>
 
-        {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stats.map(s => (
             <Card key={s.label} className="bg-card border-primary/20">
@@ -55,7 +54,6 @@ export default function CustomersPage() {
           ))}
         </div>
 
-        {/* Main List */}
         <Card className="bg-card border-primary/10 overflow-hidden">
           <CardHeader className="p-6 border-b border-primary/5 space-y-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -117,7 +115,7 @@ export default function CustomersPage() {
                         <div className="text-[8px] text-muted-foreground uppercase">Last: {new Date(customer.lastOrderDate).toLocaleDateString()}</div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 font-black text-primary">${customer.totalSpent.toLocaleString()}</td>
+                    <td className="px-6 py-4 font-black text-primary">{settings.currencySymbol}{customer.totalSpent.toLocaleString()}</td>
                     <td className="px-6 py-4">
                       <Badge variant="outline" className={`
                         text-[8px] uppercase font-black border-none px-2 py-0.5

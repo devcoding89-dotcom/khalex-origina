@@ -11,14 +11,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { Package, Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon } from 'lucide-react';
+import { Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon } from 'lucide-react';
 import { generateProductDescription } from '@/ai/flows/generate-product-description-flow';
 import { useToast } from '@/hooks/use-toast';
 
 function ProductsManagementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { products, addProduct, updateProduct, deleteProduct } = useStore();
+  const { products, addProduct, updateProduct, deleteProduct, settings } = useStore();
   const { toast } = useToast();
   
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
@@ -133,7 +133,6 @@ function ProductsManagementContent() {
           <CardContent className="pt-8">
             <form onSubmit={handleSave} className="space-y-8">
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Image Column */}
                 <div className="space-y-4">
                   <Label className="uppercase font-black text-[10px] tracking-widest">Asset Visual</Label>
                   <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center group">
@@ -157,7 +156,6 @@ function ProductsManagementContent() {
                   </div>
                 </div>
 
-                {/* Info Column */}
                 <div className="lg:col-span-2 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-4">
@@ -208,7 +206,7 @@ function ProductsManagementContent() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="uppercase font-black text-[10px] tracking-widest">Price ($)</Label>
+                          <Label className="uppercase font-black text-[10px] tracking-widest">Price ({settings.currencySymbol})</Label>
                           <Input 
                             type="number" required 
                             value={editingProduct.price} 
@@ -246,7 +244,6 @@ function ProductsManagementContent() {
                               </Button>
                             </div>
                           ))}
-                          {specRows.length === 0 && <p className="text-[10px] text-muted-foreground uppercase italic text-center py-4">No specifications defined</p>}
                         </div>
                       </div>
                       <div className="space-y-2">
@@ -291,7 +288,7 @@ function ProductsManagementContent() {
                 <div className="p-6">
                   <div className="flex justify-between items-start mb-2">
                     <h3 className="font-bold text-lg italic uppercase">{p.name}</h3>
-                    <div className="text-xl font-black text-primary">${p.price}</div>
+                    <div className="text-xl font-black text-primary">{settings.currencySymbol}{p.price.toLocaleString()}</div>
                   </div>
                   <div className="text-xs text-muted-foreground line-clamp-2 mb-6 h-8 italic">{p.description}</div>
                   <div className="flex justify-between items-center pt-4 border-t border-primary/5">

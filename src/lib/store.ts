@@ -115,9 +115,9 @@ const DEFAULT_PRODUCTS: Product[] = [
     category: 'phones', 
     type: 'physical', 
     description: 'Snapdragon 8 Gen 2, 165Hz AMOLED display.', 
-    price: 999, 
-    oldPrice: 1199, 
-    costPrice: 750,
+    price: 999000, 
+    oldPrice: 1199000, 
+    costPrice: 750000,
     stock: 5, 
     stockAlert: 2,
     imageUrl: 'https://picsum.photos/seed/rog7/600/400', 
@@ -137,7 +137,7 @@ const DEFAULT_PRODUCTS: Product[] = [
     category: 'cod', 
     type: 'digital', 
     description: 'Max level account with multiple mythic weapons.', 
-    price: 299, 
+    price: 299000, 
     stock: 1, 
     stockAlert: 0,
     imageUrl: 'https://picsum.photos/seed/acc1/600/400', 
@@ -162,7 +162,7 @@ export function useStore() {
     storeName: 'GameZone',
     whatsapp: '+1234567890',
     email: 'admin@gamezone.com',
-    currencySymbol: '$',
+    currencySymbol: '₦',
     currencyPosition: 'before',
     maintenanceMode: false,
     taxRate: 0,
@@ -296,7 +296,7 @@ export function useStore() {
 
     setOrders([newOrder, ...orders]);
     clearCart();
-    logAction('NEW_ORDER', newOrder.id, `Amount: $${total}`);
+    logAction('NEW_ORDER', newOrder.id, `Amount: ₦${total.toLocaleString()}`);
     return newOrder;
   };
 

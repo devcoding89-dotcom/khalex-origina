@@ -8,11 +8,9 @@ import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Trash2, ShoppingBag, ArrowRight, Minus, Plus, ShieldAlert } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 
 export default function CartPage() {
-  const { cart, removeFromCart, updateQuantity, clearCart } = useStore();
-  const router = useRouter();
+  const { cart, removeFromCart, updateQuantity, clearCart, settings } = useStore();
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
 
@@ -81,7 +79,7 @@ export default function CartPage() {
                             <Plus className="w-3 h-3" />
                           </Button>
                         </div>
-                        <div className="text-2xl font-black text-primary italic tracking-tighter">${item.price * item.quantity}</div>
+                        <div className="text-2xl font-black text-primary italic tracking-tighter">{settings.currencySymbol}{(item.price * item.quantity).toLocaleString()}</div>
                       </div>
                     </div>
                   </div>
@@ -99,7 +97,7 @@ export default function CartPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between font-bold text-muted-foreground text-sm uppercase">
                       <span>Subtotal</span>
-                      <span>${subtotal}</span>
+                      <span>{settings.currencySymbol}{subtotal.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between font-bold text-secondary text-sm uppercase italic">
                       <span>Delivery (Dropship)</span>
@@ -108,7 +106,7 @@ export default function CartPage() {
                     <div className="h-px bg-primary/20 my-4" />
                     <div className="flex justify-between items-center">
                       <span className="text-xl font-black uppercase italic">Total Loadout</span>
-                      <span className="text-4xl font-black text-primary tracking-tighter italic neon-text">${subtotal}</span>
+                      <span className="text-4xl font-black text-primary tracking-tighter italic neon-text">{settings.currencySymbol}{subtotal.toLocaleString()}</span>
                     </div>
                   </div>
                   

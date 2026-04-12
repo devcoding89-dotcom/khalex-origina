@@ -9,22 +9,17 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
   Search, 
-  Filter, 
   LayoutGrid, 
   List, 
   CheckCircle2, 
-  Clock, 
-  XCircle,
-  MoreVertical,
-  MessageSquare,
-  Package,
-  ArrowRight,
+  Package, 
+  ArrowRight, 
   AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function OrdersPage() {
-  const { orders, updateOrderStatus } = useStore();
+  const { orders, updateOrderStatus, settings } = useStore();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -120,7 +115,7 @@ export default function OrdersPage() {
                           {order.items.map(i => `${i.name}`).join(', ')}
                         </div>
                       </td>
-                      <td className="px-6 py-4 font-black text-primary">${order.total}</td>
+                      <td className="px-6 py-4 font-black text-primary">{settings.currencySymbol}{order.total.toLocaleString()}</td>
                       <td className="px-6 py-4">
                         <Badge variant="outline" className={`text-[8px] uppercase font-black border-none gap-1 bg-${order.status === 'completed' ? 'primary' : 'yellow-500'}/20 text-${order.status === 'completed' ? 'primary' : 'yellow-500'}`}>
                           {order.status}
@@ -165,7 +160,7 @@ export default function OrdersPage() {
                           <div className="text-[9px] text-muted-foreground line-clamp-1">{order.items.map(i => i.name).join(', ')}</div>
                         </Link>
                         <div className="flex justify-between items-center pt-2 border-t border-primary/5">
-                          <div className="text-[8px] font-black text-primary">${order.total}</div>
+                          <div className="text-[8px] font-black text-primary">{settings.currencySymbol}{order.total.toLocaleString()}</div>
                           <div className="flex gap-1">
                              {col.id === 'pending' && (
                                <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-500 hover:bg-blue-500/20" onClick={() => updateOrderStatus(order.id, 'processing')}>

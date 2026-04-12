@@ -10,12 +10,10 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { ArrowLeft, CheckCircle2, MessageSquare, ShieldCheck } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 
 export default function CheckoutPage() {
-  const { cart, createOrder } = useStore();
-  const { toast } = useToast();
+  const { cart, createOrder, settings } = useStore();
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
@@ -43,15 +41,14 @@ export default function CheckoutPage() {
       codIgn: formData.codIgn,
     });
     
-    // Create WhatsApp message
     const message = `ORDER CONFIRMATION%0A` +
       `ID: ${order.id}%0A` +
       `Customer: ${order.customerName}%0A` +
       `Items:%0A` + 
       order.items.map(i => `- ${i.name} x${i.quantity}`).join('%0A') + 
-      `%0A%0ATotal: $${order.total}%0A%0APlease provide payment details.`;
+      `%0A%0ATotal: ${settings.currencySymbol}${order.total.toLocaleString()}%0A%0APlease provide payment details.`;
 
-    const waLink = `https://wa.me/1234567890?text=${message}`;
+    const waLink = `https://wa.me/${settings.whatsapp.replace(/\+/g, '')}?text=${message}`;
     
     setTimeout(() => {
       setIsSuccess(true);
@@ -99,7 +96,6 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* Form */}
           <div className="lg:col-span-2">
             <form onSubmit={handlePlaceOrder} id="checkout-form" className="space-y-8">
               <Card className="glass border-primary/20">
@@ -113,7 +109,7 @@ export default function CheckoutPage() {
                   </div>
                   <div className="space-y-2">
                     <Label className="uppercase font-black text-[10px] tracking-widest text-primary">Comms Channel (WhatsApp)</Label>
-                    <Input required value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="bg-background h-12" placeholder="+123 456 7890" />
+                    <Input required value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="bg-background h-12" placeholder="+234..." />
                   </div>
                   <div className="space-y-2 md:col-span-2">
                     <Label className="uppercase font-black text-[10px] tracking-widest text-primary">Encrypted Email (Optional)</Label>
@@ -136,7 +132,6 @@ export default function CheckoutPage() {
                       <Label className="uppercase font-black text-[10px] tracking-widest text-secondary">In-Game Name (IGN)</Label>
                       <Input required value={formData.codIgn} onChange={e => setFormData({...formData, codIgn: e.target.value})} className="bg-background h-12" placeholder="Ghost_141" />
                     </div>
-                    <p className="text-[10px] text-muted-foreground uppercase italic md:col-span-2">Required for CP top-ups and account transfers. Ensure data is accurate.</p>
                   </CardContent>
                 </Card>
               )}
@@ -158,7 +153,6 @@ export default function CheckoutPage() {
             </form>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
             <Card className="bg-card border-primary/30 neon-glow sticky top-24">
               <CardHeader className="border-b border-primary/10">
@@ -177,7 +171,7 @@ export default function CheckoutPage() {
                           <div className="text-muted-foreground">Qty: {item.quantity}</div>
                         </div>
                       </div>
-                      <div className="font-black text-primary">${item.price * item.quantity}</div>
+                      <div className="font-black text-primary">{settings.currencySymbol}{(item.price * item.quantity).toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
@@ -186,15 +180,15 @@ export default function CheckoutPage() {
                 <div className="w-full py-4 space-y-2">
                   <div className="flex justify-between text-muted-foreground text-sm font-bold uppercase">
                     <span>Subtotal</span>
-                    <span>${subtotal}</span>
+                    <span>{settings.currencySymbol}{subtotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-secondary text-sm font-black uppercase italic">
                     <span>Tax / Fee</span>
-                    <span>$0.00</span>
+                    <span>{settings.currencySymbol}0</span>
                   </div>
                   <div className="flex justify-between items-center pt-2">
                     <span className="text-xl font-black uppercase">Total Due</span>
-                    <span className="text-4xl font-black text-primary italic tracking-tighter">${subtotal}</span>
+                    <span className="text-4xl font-black text-primary italic tracking-tighter">{settings.currencySymbol}{subtotal.toLocaleString()}</span>
                   </div>
                 </div>
                 <Button 
@@ -205,9 +199,6 @@ export default function CheckoutPage() {
                 >
                   {isProcessing ? 'Transmitting...' : 'Execute Order'}
                 </Button>
-                <div className="flex items-center justify-center gap-2 mt-4 text-[10px] text-muted-foreground uppercase font-black">
-                  <ShieldCheck className="w-3 h-3 text-primary" /> Encrypted Transaction Secure
-                </div>
               </CardFooter>
             </Card>
           </div>

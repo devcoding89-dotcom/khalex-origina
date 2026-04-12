@@ -9,13 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { ShoppingCart, MessageCircle, ArrowLeft, ShieldCheck, Zap, Minus, Plus } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 
 export default function ProductDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { products, addToCart } = useStore();
+  const { products, addToCart, settings } = useStore();
   const { toast } = useToast();
   const router = useRouter();
   const [product, setProduct] = useState<Product | null>(null);
@@ -40,7 +39,7 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
     });
   };
 
-  const waLink = `https://wa.me/1234567890?text=Hi! I'm interested in ${product.name} ($${product.price}). Is it available?`;
+  const waLink = `https://wa.me/${settings.whatsapp.replace(/\+/g, '')}?text=Hi! I'm interested in ${product.name} (${settings.currencySymbol}${product.price.toLocaleString()}). Is it available?`;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -52,7 +51,6 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
         </Button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Image Section */}
           <div className="space-y-4">
             <div className="relative aspect-square rounded-2xl overflow-hidden border border-primary/20 bg-card group">
               <Image 
@@ -63,13 +61,12 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
               />
               {product.oldPrice && (
                 <Badge className="absolute top-6 right-6 bg-destructive text-destructive-foreground font-black px-4 py-1 uppercase scale-125">
-                  Save ${product.oldPrice - product.price}
+                  Save {settings.currencySymbol}{(product.oldPrice - product.price).toLocaleString()}
                 </Badge>
               )}
             </div>
           </div>
 
-          {/* Details Section */}
           <div className="flex flex-col justify-center">
             <div className="mb-2">
               <Badge variant="secondary" className="bg-primary/20 text-primary uppercase font-black tracking-widest px-3">
@@ -79,9 +76,9 @@ export default function ProductDetailPage({ params }: { params: Promise<{ id: st
             <h1 className="text-5xl md:text-6xl font-black mb-6 neon-text leading-tight">{product.name}</h1>
             
             <div className="flex items-center gap-4 mb-8">
-              <span className="text-5xl font-black text-primary tracking-tighter">${product.price}</span>
+              <span className="text-5xl font-black text-primary tracking-tighter">{settings.currencySymbol}{product.price.toLocaleString()}</span>
               {product.oldPrice && (
-                <span className="text-2xl line-through text-muted-foreground">${product.oldPrice}</span>
+                <span className="text-2xl line-through text-muted-foreground">{settings.currencySymbol}{product.oldPrice.toLocaleString()}</span>
               )}
             </div>
 

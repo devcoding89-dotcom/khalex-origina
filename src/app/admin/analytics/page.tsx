@@ -19,14 +19,14 @@ import {
 import { TrendingUp, Users, ShoppingBag, Target, ArrowUpRight, BarChart3 } from 'lucide-react';
 
 export default function AnalyticsPage() {
-  const { orders, products, customers } = useStore();
+  const { orders, products, customers, settings } = useStore();
 
   const categoryPerformance = [
-    { name: 'Phones', value: 4500, orders: 12 },
-    { name: 'Laptops', value: 8900, orders: 5 },
-    { name: 'Gadgets', value: 2300, orders: 18 },
-    { name: 'Accounts', value: 3400, orders: 22 },
-    { name: 'Top-ups', value: 1200, orders: 45 },
+    { name: 'Phones', value: 4500000, orders: 12 },
+    { name: 'Laptops', value: 8900000, orders: 5 },
+    { name: 'Gadgets', value: 2300000, orders: 18 },
+    { name: 'Accounts', value: 3400000, orders: 22 },
+    { name: 'Top-ups', value: 1200000, orders: 45 },
   ];
 
   const monthlyVolume = [
@@ -47,7 +47,7 @@ export default function AnalyticsPage() {
   const COLORS = ['#00ff88', '#00d4ff', '#ffaa00', '#ff4444', '#888888'];
 
   const stats = [
-    { label: 'Avg Order Value', value: '$452.20', icon: TrendingUp, change: '+5.4%' },
+    { label: 'Avg Order Value', value: `${settings.currencySymbol}452,200`, icon: TrendingUp, change: '+5.4%' },
     { label: 'Conversion Rate', value: '3.8%', icon: Target, change: '+1.2%' },
     { label: 'Retention Rate', value: '42%', icon: Users, change: '+2.8%' },
     { label: 'Monthly Growth', value: '18%', icon: ShoppingBag, change: '+4.5%' },
@@ -94,6 +94,7 @@ export default function AnalyticsPage() {
                   <Tooltip 
                     contentStyle={{ backgroundColor: '#1a1a1a', border: '1px solid #00ff88' }}
                     itemStyle={{ color: '#00ff88' }}
+                    formatter={(value: number) => [`${settings.currencySymbol}${value.toLocaleString()}`, 'Revenue']}
                   />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                     {categoryPerformance.map((entry, index) => (
@@ -123,36 +124,6 @@ export default function AnalyticsPage() {
                   <Bar dataKey="units" fill="#00d4ff" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-card border-primary/10">
-            <CardHeader>
-              <CardTitle className="text-sm font-black uppercase tracking-widest">Platform Traffic (Mock)</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[400px] flex items-center justify-center">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={deviceUsage}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={80}
-                    outerRadius={120}
-                    paddingAngle={5}
-                    dataKey="value"
-                  >
-                    {deviceUsage.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-              <div className="absolute flex flex-col items-center justify-center">
-                <div className="text-2xl font-black text-primary">70%</div>
-                <div className="text-[8px] font-black uppercase text-muted-foreground">Mobile</div>
-              </div>
             </CardContent>
           </Card>
         </div>
