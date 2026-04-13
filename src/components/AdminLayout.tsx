@@ -12,7 +12,6 @@ import {
   BarChart3, 
   Settings, 
   Database, 
-  LogOut, 
   Bell, 
   Search,
   Menu,
@@ -25,8 +24,6 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useUser, useAuth } from '@/firebase';
-import { signOut } from 'firebase/auth';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -34,18 +31,11 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
-  const router = useRouter();
-  const auth = useAuth();
-  const { user, loading: authLoading } = useUser();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/admin/login');
-    }
-    
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     
@@ -59,7 +49,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [user, authLoading, router]);
+  }, []);
 
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
@@ -70,27 +60,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { label: 'Settings', icon: Settings, href: '/admin/settings' },
     { label: 'Backup', icon: Database, href: '/admin/backup' },
   ];
-
-  const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      localStorage.removeItem('gz_admin_auth'); // Cleanup legacy flag
-      router.push('/admin/login');
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
-
-  if (authLoading || !user) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Gamepad2 className="w-12 h-12 text-primary animate-bounce" />
-          <p className="text-primary font-headline uppercase text-[10px] tracking-widest animate-pulse">Checking Access...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
@@ -125,17 +94,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               );
             })}
           </nav>
-
-          <div className="p-4 border-t space-y-2">
-            <Button 
-              variant="ghost" 
-              className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10 h-9 text-[10px] font-black uppercase tracking-widest" 
-              onClick={handleLogout}
-            >
-              <LogOut className="w-4 h-4" />
-              {isSidebarOpen && <span>Logout</span>}
-            </Button>
-          </div>
         </div>
       </aside>
 
@@ -180,15 +138,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <Badge className="absolute -top-1 -right-1 w-3.5 h-3.5 p-0 flex items-center justify-center bg-primary text-primary-foreground text-[7px] font-black">3</Badge>
               </Button>
             </Link>
-            <div className="flex items-center gap-3 pl-6 border-l border-primary/10">
-              <div className="text-right">
-                <div className="text-[10px] font-black uppercase leading-none">{user.email?.split('@')[0]}</div>
-                <div className="text-[7px] text-primary font-bold uppercase tracking-widest">Admin</div>
-              </div>
-              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                <Plus className="w-4 h-4 text-primary" />
-              </div>
-            </div>
           </div>
         </header>
 

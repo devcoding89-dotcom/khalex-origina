@@ -1,17 +1,16 @@
+
 "use client";
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { ShoppingCart, Zap, UserCircle, Menu, X, Search, ShieldCheck } from 'lucide-react';
+import { ShoppingCart, Zap, Menu, X, Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useUser } from '@/firebase';
 
 export function Navigation() {
   const { cart, settings } = useStore();
-  const { user } = useUser();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -100,12 +99,6 @@ export function Navigation() {
               )}
             </Button>
           </Link>
-          
-          <Link href={user ? "/profile" : "/login"} className="hidden sm:inline-flex">
-            <Button variant="ghost" size="icon" className={`h-7 w-7 rounded-full border border-transparent ${user ? 'text-primary' : 'hover:text-primary'}`}>
-              {user ? <ShieldCheck className="w-3.5 h-3.5" /> : <UserCircle className="w-3.5 h-3.5" />}
-            </Button>
-          </Link>
 
           <Button variant="ghost" size="icon" className="lg:hidden h-7 w-7" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
@@ -123,9 +116,6 @@ export function Navigation() {
           ))}
           <Link href="/track-order" className="text-secondary flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
             <Search className="w-3.5 h-3.5" /> Track Order
-          </Link>
-          <Link href={user ? "/profile" : "/login"} onClick={() => setIsMenuOpen(false)} className={user ? "text-primary" : ""}>
-            {user ? "Profile" : "Login"}
           </Link>
         </div>
       )}

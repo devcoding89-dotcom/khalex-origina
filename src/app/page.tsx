@@ -1,29 +1,17 @@
 
 "use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Navigation } from '@/components/Navigation';
 import { useStore } from '@/lib/store';
 import { ProductCard } from '@/components/ProductCard';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowRight, ShoppingCart, MapPin, Search, ShieldCheck, Zap, Play } from 'lucide-react';
-import { useUser } from '@/firebase';
+import { ArrowRight, ShoppingCart, MapPin, Search, ShieldCheck, Zap } from 'lucide-react';
 
 export default function Home() {
   const { products, settings } = useStore();
-  const { user, loading } = useUser();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   const featuredProducts = products.filter(p => p.isFeatured).slice(0, 6);
-  const videoProduct = products.find(p => p.videoUrl) || products[0];
 
   const categories = [
     { label: 'Phones', value: 'phones', icon: '📱' },
@@ -32,12 +20,6 @@ export default function Home() {
     { label: 'Accounts', value: 'cod', icon: '🎯' },
     { label: 'Top-up', value: 'cp', icon: '💎' },
   ];
-
-  if (loading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">LOADING HUB...</div>;
-  }
-
-  if (!user) return null;
 
   const storeNameParts = settings.storeName.split(' ');
   const firstName = storeNameParts[0] || 'KHALEX';
@@ -179,7 +161,7 @@ export default function Home() {
         <div className="container mx-auto px-4 mt-8 pt-4 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-2 text-[8px] font-black uppercase tracking-[0.2em] text-muted-foreground/50">
           <p>© {new Date().getFullYear()} {settings.storeName}. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="/admin/login" className="hover:text-primary transition-colors border-l pl-4 border-white/10">Admin</Link>
+            <Link href="/admin/dashboard" className="hover:text-primary transition-colors border-l pl-4 border-white/10">Admin Access</Link>
           </div>
         </div>
       </footer>
