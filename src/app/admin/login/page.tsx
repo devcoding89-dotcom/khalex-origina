@@ -3,14 +3,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Lock } from 'lucide-react';
+import { ShieldCheck, Lock, AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -21,42 +21,50 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (localStorage.getItem('admin_override_session') === 'active') {
+    if (localStorage.getItem('admin_override_session') === 'active' && auth.currentUser) {
       router.replace('/admin/dashboard');
     }
-  }, [router]);
+  }, [router, auth.currentUser]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Private Admin Access Check
-    if (username.toLowerCase() === 'khlex' && password === 'gaming123') {
+    try {
+      // We attempt to use the provided username as an email or construct one
+      const email = username.includes('@') ? username : `${username}@khalexhub.com`;
+      
+      // Special handling for the master credentials to ensure they are linked to a real Firebase Auth session
+      // This is necessary because Firestore rules require a valid auth.uid to allow writes
+      await signInWithEmailAndPassword(auth, email, password);
+      
       localStorage.setItem('admin_override_session', 'active');
       toast({
         title: "Access Granted",
-        description: "Welcome back, Commander.",
-      });
-      router.push('/admin/dashboard');
-      return;
-    }
-
-    try {
-      const email = username.includes('@') ? username : `${username}@khalexhub.com`;
-      await signInWithEmailAndPassword(auth, email, password);
-      localStorage.removeItem('admin_override_session');
-      toast({
-        title: "Access Granted",
-        description: "Credentials verified via Cloud.",
+        description: "Secure uplink established. Database is now live.",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
       console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Access Denied",
-        description: "Incorrect callsign or access key.",
-      });
+      
+      // If it's the master password but the user doesn't exist in Firebase yet, 
+      // we tell them to create the admin user in the console.
+      if (username.toLowerCase() === 'khlex' && password === 'gaming123') {
+        localStorage.setItem('admin_override_session', 'active');
+        toast({
+          variant: "destructive",
+          title: "Database Auth Needed",
+          description: "Master password accepted, but you must create 'khlex@khalexhub.com' in the Firebase Console to enable cloud saving.",
+        });
+        // We still allow them in, but with a warning that cloud saves will fail until they add the user
+        router.push('/admin/dashboard');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "Incorrect callsign or access key.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -109,6 +117,13 @@ export default function AdminLoginPage() {
               {isLoading ? "Verifying..." : "Establish Uplink"}
             </Button>
           </form>
+
+          <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3">
+             <AlertCircle className="w-5 h-5 text-primary shrink-0" />
+             <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
+               Ensure your browser is connected to the internet to sync mission data with other devices.
+             </p>
+          </div>
 
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <div className="flex items-center justify-center gap-2 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">

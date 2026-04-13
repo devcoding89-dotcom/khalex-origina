@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -15,6 +16,7 @@ import {
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
+import { toast } from '@/hooks/use-toast';
 
 // --- TYPES ---
 export type Category = 'phones' | 'laptops' | 'gadgets' | 'cod' | 'cp' | 'all';
@@ -102,7 +104,7 @@ export interface AuditLog {
 export function useStore() {
   const db = useFirestore();
 
-  // Queries - Using simple collection refs first to ensure visibility even if indexes are missing
+  // Queries
   const productsQuery = useMemo(() => query(collection(db, 'products'), limit(100)), [db]);
   const ordersQuery = useMemo(() => query(collection(db, 'orders'), limit(100)), [db]);
   const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(100)), [db]);
@@ -114,7 +116,6 @@ export function useStore() {
   const { data: customersData } = useCollection<Customer>(customersQuery);
   const { data: settingsData } = useDoc<StoreSettings>(settingsRef);
 
-  // Fallback to local data or empty array
   const products = productsData || [];
   const orders = ordersData || [];
   const customers = customersData || [];
@@ -148,13 +149,17 @@ export function useStore() {
       costPrice: Number(p.costPrice) || 0
     };
 
-    setDoc(ref, newProduct, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: ref.path,
-        operation: 'create',
-        requestResourceData: newProduct
-      } satisfies SecurityRuleContext));
-    });
+    setDoc(ref, newProduct, { merge: true })
+      .then(() => {
+        toast({ title: "Cloud Sync Complete", description: "Product is now visible on all devices." });
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: ref.path,
+          operation: 'create',
+          requestResourceData: newProduct
+        } satisfies SecurityRuleContext));
+      });
   };
 
   const updateProduct = (p: Product) => {
@@ -166,23 +171,31 @@ export function useStore() {
       costPrice: Number(p.costPrice)
     };
 
-    setDoc(ref, updateData, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: ref.path,
-        operation: 'update',
-        requestResourceData: updateData
-      } satisfies SecurityRuleContext));
-    });
+    setDoc(ref, updateData, { merge: true })
+      .then(() => {
+        toast({ title: "Asset Updated", description: "Changes synced to cloud." });
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: ref.path,
+          operation: 'update',
+          requestResourceData: updateData
+        } satisfies SecurityRuleContext));
+      });
   };
 
   const deleteProduct = (id: string) => {
     const ref = doc(db, 'products', id);
-    deleteDoc(ref).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: ref.path,
-        operation: 'delete'
-      } satisfies SecurityRuleContext));
-    });
+    deleteDoc(ref)
+      .then(() => {
+        toast({ title: "Asset Deployed", description: "Product removed from cloud." });
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: ref.path,
+          operation: 'delete'
+        } satisfies SecurityRuleContext));
+      });
   };
 
   const createOrder = (orderData: any) => {
@@ -215,7 +228,6 @@ export function useStore() {
       } satisfies SecurityRuleContext));
     });
 
-    // Update Customer Profile
     const customerRef = doc(db, 'customers', orderData.whatsapp);
     const existingCustomer = customers.find(c => c.whatsapp === orderData.whatsapp);
     
@@ -279,13 +291,17 @@ export function useStore() {
   };
 
   const updateSettings = (s: StoreSettings) => {
-    setDoc(settingsRef, s, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: settingsRef.path,
-        operation: 'update',
-        requestResourceData: s
-      } satisfies SecurityRuleContext));
-    });
+    setDoc(settingsRef, s, { merge: true })
+      .then(() => {
+        toast({ title: "Settings Applied", description: "Global changes synced." });
+      })
+      .catch(async (err) => {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+          path: settingsRef.path,
+          operation: 'update',
+          requestResourceData: s
+        } satisfies SecurityRuleContext));
+      });
   };
 
   const addToCart = (p: Product, qty: number = 1) => {

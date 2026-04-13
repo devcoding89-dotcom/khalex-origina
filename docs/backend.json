@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "Product": {
@@ -9,10 +10,18 @@
         "sku": { "type": "string" },
         "name": { "type": "string" },
         "category": { "type": "string" },
+        "description": { "type": "string" },
         "price": { "type": "number" },
+        "oldPrice": { "type": "number" },
+        "costPrice": { "type": "number" },
         "stock": { "type": "number" },
+        "stockAlert": { "type": "number" },
         "imageUrl": { "type": "string" },
-        "status": { "type": "string", "enum": ["active", "draft", "sold_out"] }
+        "status": { "type": "string", "enum": ["active", "draft", "sold_out"] },
+        "isFeatured": { "type": "boolean" },
+        "salesCount": { "type": "number" },
+        "views": { "type": "number" },
+        "createdAt": { "type": "object" }
       }
     },
     "Order": {
@@ -21,10 +30,14 @@
       "type": "object",
       "properties": {
         "id": { "type": "string" },
+        "displayId": { "type": "string" },
         "customerName": { "type": "string" },
         "total": { "type": "number" },
         "status": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "paymentStatus": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "createdAt": { "type": "object" },
+        "timeline": { "type": "array" }
       }
     },
     "Customer": {
@@ -35,7 +48,9 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "whatsapp": { "type": "string" },
-        "totalSpent": { "type": "number" }
+        "totalSpent": { "type": "number" },
+        "orderCount": { "type": "number" },
+        "lastOrderDate": { "type": "object" }
       }
     },
     "StoreSettings": {
@@ -45,7 +60,11 @@
       "properties": {
         "storeName": { "type": "string" },
         "whatsapp": { "type": "string" },
-        "currencySymbol": { "type": "string" }
+        "email": { "type": "string" },
+        "address": { "type": "string" },
+        "currencySymbol": { "type": "string" },
+        "maintenanceMode": { "type": "boolean" },
+        "taxRate": { "type": "number" }
       }
     }
   },
@@ -55,19 +74,19 @@
   "firestore": {
     "/products/{productId}": {
       "schema": "Product",
-      "description": "Collection of available gaming equipment"
+      "description": "Collection of available gaming equipment. READ: Public, WRITE: Authenticated Admin."
     },
     "/orders/{orderId}": {
       "schema": "Order",
-      "description": "Manifest of all deployments"
+      "description": "Manifest of all deployments. READ: Public, WRITE: Public/Admin."
     },
     "/customers/{customerId}": {
       "schema": "Customer",
-      "description": "Personnel database"
+      "description": "Personnel database. READ: Admin, WRITE: Admin/Public."
     },
     "/settings/global": {
       "schema": "StoreSettings",
-      "description": "Global system parameters"
+      "description": "Global system parameters. READ: Public, WRITE: Admin."
     }
   }
 }
