@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -21,7 +23,6 @@ export default function CustomerLogin() {
   const auth = useAuth();
   const { user, loading: userLoading } = useUser();
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!userLoading && user) {
       router.push('/');
@@ -69,7 +70,7 @@ export default function CustomerLogin() {
   };
 
   if (userLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">SYNCHRONIZING...</div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">Checking status...</div>;
   }
 
   return (
@@ -83,7 +84,7 @@ export default function CustomerLogin() {
             </div>
             <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Login</CardTitle>
             <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-              Login to your account to shop
+              Enter your details to start shopping
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
@@ -93,7 +94,7 @@ export default function CustomerLogin() {
                 <Input 
                   id="email" 
                   type="email"
-                  placeholder="name@example.com" 
+                  placeholder="your@email.com" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   required 
@@ -116,7 +117,7 @@ export default function CustomerLogin() {
               <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex gap-2 items-center">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <p className="text-[8px] text-muted-foreground uppercase font-bold leading-tight">
-                  Secure login keeps your data safe.
+                  Your account is safe and secure.
                 </p>
               </div>
             </CardContent>
@@ -126,7 +127,7 @@ export default function CustomerLogin() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Checking...' : 'Login'}
+                {isLoading ? 'Wait...' : 'Login'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <Button 
@@ -135,24 +136,15 @@ export default function CustomerLogin() {
                 onClick={handleGoogleLogin}
                 className="w-full h-11 border-primary/20 font-black uppercase tracking-widest text-xs"
               >
-                Login with Google
+                Continue with Google
               </Button>
-              <div className="flex justify-between w-full mt-2">
-                <Button 
-                  type="button"
-                  variant="link" 
-                  className="text-[8px] uppercase font-black text-muted-foreground p-0 h-auto"
+              <div className="flex flex-col items-center gap-2 w-full mt-2">
+                <Link 
+                  href="/register"
+                  className="text-[10px] uppercase font-black text-primary hover:underline"
                 >
-                  Forgot Password?
-                </Button>
-                <Button 
-                  type="button"
-                  variant="link" 
-                  onClick={() => router.push('/register')}
-                  className="text-[8px] uppercase font-black text-primary p-0 h-auto"
-                >
-                  Register Now
-                </Button>
+                  Don't have an account? Register Now
+                </Link>
               </div>
             </CardFooter>
           </form>
