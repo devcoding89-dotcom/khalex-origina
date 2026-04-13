@@ -1,6 +1,8 @@
 
 /**
- * TO LINK YOUR APP TO FIREBASE:
+ * ATTENTION: YOU MUST UPDATE THIS FILE!
+ * 
+ * To link your app to Firebase:
  * 
  * 1. Go to Firebase Console (https://console.firebase.google.com/)
  * 2. Click your Project -> Project Settings
@@ -9,14 +11,14 @@
  * 5. Copy the 'firebaseConfig' object provided by Google.
  * 6. Replace EVERYTHING in the curly braces below with your actual data.
  * 
- * IMPORTANT: If you see "auth/invalid-api-key" errors, it means 
- * you have not replaced the placeholder values below with your real keys.
+ * IF YOU SEE "auth/invalid-api-key", IT IS BECAUSE YOU ARE USING 
+ * THESE PLACEHOLDER VALUES INSTEAD OF YOUR REAL ONES.
  */
 export const firebaseConfig = {
-  apiKey: "api-key-placeholder",
-  authDomain: "project-id.firebaseapp.com",
-  projectId: "project-id",
-  storageBucket: "project-id.appspot.com",
-  messagingSenderId: "sender-id",
-  appId: "app-id"
+  apiKey: "REPLACE_WITH_YOUR_API_KEY",
+  authDomain: "REPLACE_WITH_YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
+  storageBucket: "REPLACE_WITH_YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
+  appId: "REPLACE_WITH_YOUR_APP_ID"
 };

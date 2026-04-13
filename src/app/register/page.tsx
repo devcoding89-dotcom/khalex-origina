@@ -12,7 +12,7 @@ import { UserPlus, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Navigation } from '@/components/Navigation';
 import { useAuth, useUser } from '@/firebase';
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 
 export default function CustomerRegister() {
   const [name, setName] = useState('');
@@ -71,7 +71,7 @@ export default function CustomerRegister() {
       let message = "Could not create account. Please try again.";
       
       if (error.code === 'auth/invalid-api-key') {
-        message = "Firebase API Key is missing or invalid. Please check your config.";
+        message = "Firebase API Key is invalid. Go to src/firebase/config.ts and paste your real keys from the Firebase Console.";
       } else if (error.code === 'auth/email-already-in-use') {
         message = "This email is already registered.";
       } else if (error.message) {
@@ -85,24 +85,6 @@ export default function CustomerRegister() {
       });
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    const provider = new GoogleAuthProvider();
-    try {
-      await signInWithPopup(auth, provider);
-      toast({
-        title: "Welcome",
-        description: "Account created with Google successfully.",
-      });
-      router.push('/');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Google Registration Failed",
-        description: error.message,
-      });
     }
   };
 
@@ -190,14 +172,6 @@ export default function CustomerRegister() {
               >
                 {isLoading ? 'Creating Account...' : 'Sign Up'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
-              </Button>
-              <Button 
-                type="button"
-                variant="outline"
-                onClick={handleGoogleLogin}
-                className="w-full h-11 border-primary/20 font-black uppercase tracking-widest text-xs"
-              >
-                Sign up with Google
               </Button>
               <div className="flex justify-center w-full mt-2">
                 <Link 
