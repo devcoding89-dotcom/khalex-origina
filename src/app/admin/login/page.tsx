@@ -25,15 +25,11 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      // Use real Firebase Auth
       await signInWithEmailAndPassword(auth, email, password);
       
-      // We still use localStorage as a secondary flag for your existing AdminLayout check
-      localStorage.setItem('gz_admin_auth', 'true');
-      
       toast({
-        title: "Welcome Back",
-        description: "Admin access granted.",
+        title: "Access Granted",
+        description: "Welcome to the admin hub.",
       });
       
       router.push('/admin/dashboard');
@@ -41,7 +37,7 @@ export default function AdminLogin() {
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: error.message || "Invalid email or password.",
+        description: error.message || "Invalid credentials.",
       });
     } finally {
       setIsLoading(false);
@@ -52,18 +48,18 @@ export default function AdminLogin() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <Card className="w-full max-w-sm bg-card border-primary/20 shadow-2xl">
         <CardHeader className="text-center space-y-1">
-          <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
-            <Lock className="w-6 h-6 text-primary" />
+          <div className="mx-auto w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center mb-2">
+            <Lock className="w-5 h-5 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Admin Login</CardTitle>
-          <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-            Staff Access Only
+          <CardTitle className="text-xl font-black uppercase italic tracking-tighter">Admin Login</CardTitle>
+          <CardDescription className="text-[9px] uppercase font-bold text-muted-foreground">
+            Authorized Personnel Only
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest">Admin Email</Label>
+              <Label htmlFor="email" className="text-[9px] font-black uppercase tracking-widest">Email</Label>
               <Input 
                 id="email" 
                 type="email"
@@ -71,11 +67,11 @@ export default function AdminLogin() {
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)}
                 required 
-                className="bg-background border-primary/20 h-10 text-xs"
+                className="bg-background border-primary/20 h-9 text-[10px]"
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest">Password</Label>
+              <Label htmlFor="password" className="text-[9px] font-black uppercase tracking-widest">Password</Label>
               <Input 
                 id="password" 
                 type="password" 
@@ -83,21 +79,21 @@ export default function AdminLogin() {
                 value={password} 
                 onChange={(e) => setPassword(e.target.value)}
                 required 
-                className="bg-background border-primary/20 h-10 text-xs"
+                className="bg-background border-primary/20 h-9 text-[10px]"
               />
             </div>
           </CardContent>
-          <CardFooter className="flex flex-col gap-3 pt-4">
+          <CardFooter className="flex flex-col gap-2 pt-4">
             <Button 
               type="submit" 
-              className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
+              className="w-full h-10 bg-primary text-primary-foreground font-black uppercase tracking-widest text-[10px]"
               disabled={isLoading}
             >
-              {isLoading ? 'Verifying...' : 'Login'}
-              {!isLoading && <LogIn className="ml-2 w-4 h-4" />}
+              {isLoading ? 'Checking...' : 'Login'}
+              {!isLoading && <LogIn className="ml-2 w-3.5 h-3.5" />}
             </Button>
-            <Button variant="ghost" asChild className="text-[8px] uppercase font-black text-muted-foreground hover:text-primary">
-              <a href="/">Return to Shop</a>
+            <Button variant="ghost" asChild className="text-[7px] uppercase font-black text-muted-foreground hover:text-primary">
+              <a href="/">Exit to Site</a>
             </Button>
           </CardFooter>
         </form>

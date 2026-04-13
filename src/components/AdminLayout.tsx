@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { useUser, useAuth } from '@/firebase';
+import { signOut } from 'firebase/auth';
 
 interface AdminLayoutProps {
   children: React.ReactNode;
@@ -33,17 +35,15 @@ interface AdminLayoutProps {
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
   const router = useRouter();
+  const auth = useAuth();
+  const { user, loading: authLoading } = useUser();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
-  const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    const auth = localStorage.getItem('gz_admin_auth');
-    if (auth !== 'true') {
+    if (!authLoading && !user) {
       router.replace('/admin/login');
-    } else {
-      setIsAuthorized(true);
     }
     
     setCurrentTime(new Date());
@@ -59,11 +59,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [router]);
+  }, [user, authLoading, router]);
 
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
-    { label: 'Inventory', icon: Package, href: '/admin/products' },
+    { label: 'Products', icon: Package, href: '/admin/products' },
     { label: 'Orders', icon: ShoppingBag, href: '/admin/orders' },
     { label: 'Customers', icon: Users, href: '/admin/customers' },
     { label: 'Analytics', icon: BarChart3, href: '/admin/analytics' },
@@ -71,17 +71,22 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { label: 'Backup', icon: Database, href: '/admin/backup' },
   ];
 
-  const handleLogout = () => {
-    localStorage.removeItem('gz_admin_auth');
-    router.push('/admin/login');
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('gz_admin_auth'); // Cleanup legacy flag
+      router.push('/admin/login');
+    } catch (error) {
+      console.error("Logout failed", error);
+    }
   };
 
-  if (!isAuthorized) {
+  if (authLoading || !user) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Gamepad2 className="w-12 h-12 text-primary animate-bounce" />
-          <p className="text-primary font-headline uppercase tracking-widest animate-pulse">Initializing Secure Uplink...</p>
+          <p className="text-primary font-headline uppercase text-[10px] tracking-widest animate-pulse">Checking Access...</p>
         </div>
       </div>
     );
@@ -97,7 +102,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="p-6 border-b flex items-center justify-between">
             <Link href="/admin/dashboard" className="flex items-center gap-2">
               <Gamepad2 className="w-8 h-8 text-primary" />
-              {isSidebarOpen && <span className="font-headline font-black tracking-tighter text-xl">COMMAND</span>}
+              {isSidebarOpen && <span className="font-headline font-black tracking-tighter text-lg uppercase italic">Admin Hub</span>}
             </Link>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(false)}>
               <X className="w-5 h-5" />
@@ -111,9 +116,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <Link key={item.label} href={item.href}>
                   <Button 
                     variant={isActive ? "secondary" : "ghost"} 
-                    className={`w-full justify-start gap-3 ${isActive ? 'bg-primary/10 text-primary border-none' : 'hover:bg-primary/5 hover:text-primary'}`}
+                    className={`w-full justify-start gap-3 h-9 text-[10px] font-black uppercase tracking-widest ${isActive ? 'bg-primary/10 text-primary border-none' : 'hover:bg-primary/5 hover:text-primary'}`}
                   >
-                    <item.icon className="w-5 h-5 shrink-0" />
+                    <item.icon className="w-4 h-4 shrink-0" />
                     {isSidebarOpen && <span>{item.label}</span>}
                   </Button>
                 </Link>
@@ -124,32 +129,32 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="p-4 border-t space-y-2">
             <Button 
               variant="ghost" 
-              className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10" 
+              className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10 h-9 text-[10px] font-black uppercase tracking-widest" 
               onClick={handleLogout}
             >
-              <LogOut className="w-5 h-5" />
-              {isSidebarOpen && <span>Power Off</span>}
+              <LogOut className="w-4 h-4" />
+              {isSidebarOpen && <span>Logout</span>}
             </Button>
           </div>
         </div>
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-20 border-b bg-card/50 backdrop-blur-md flex items-center justify-between px-8 z-40">
+        <header className="h-16 border-b bg-card/50 backdrop-blur-md flex items-center justify-between px-8 z-40">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4" />
             </Button>
             <div className="hidden lg:flex items-center gap-4">
-              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+              <div className="flex items-center gap-2 text-[8px] font-black uppercase tracking-widest text-muted-foreground">
                 <Clock className="w-3 h-3 text-primary" />
                 {currentTime ? `${currentTime.toLocaleTimeString()}` : '--:--:--'}
               </div>
-              <Badge variant="outline" className={`text-[8px] font-black border-none gap-1.5 ${isOnline ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+              <Badge variant="outline" className={`text-[7px] font-black border-none gap-1.5 ${isOnline ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
                 {isOnline ? (
                   <>
                     <CloudLightning className="w-2.5 h-2.5" />
-                    CLOUD: LIVE SYNC
+                    SYNCED
                   </>
                 ) : (
                   <>
@@ -163,36 +168,36 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
           <div className="flex items-center gap-6">
             <div className="relative hidden md:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <input 
-                placeholder="Global Search..." 
-                className="bg-background border border-primary/10 rounded-full h-10 pl-10 pr-4 text-sm w-64 focus:outline-none focus:border-primary transition-all"
+                placeholder="Quick search..." 
+                className="bg-background border border-primary/10 rounded-full h-8 pl-9 pr-4 text-[10px] w-48 focus:outline-none focus:border-primary transition-all uppercase font-bold"
               />
             </div>
             <Link href="/admin/notifications">
-              <Button variant="ghost" size="icon" className="relative">
-                <Bell className="w-5 h-5" />
-                <Badge className="absolute -top-1 -right-1 w-4 h-4 p-0 flex items-center justify-center bg-primary text-primary-foreground text-[8px]">3</Badge>
+              <Button variant="ghost" size="icon" className="relative h-8 w-8">
+                <Bell className="w-4 h-4" />
+                <Badge className="absolute -top-1 -right-1 w-3.5 h-3.5 p-0 flex items-center justify-center bg-primary text-primary-foreground text-[7px] font-black">3</Badge>
               </Button>
             </Link>
             <div className="flex items-center gap-3 pl-6 border-l border-primary/10">
               <div className="text-right">
-                <div className="text-xs font-black uppercase">Commander Admin</div>
-                <div className="text-[10px] text-primary font-bold">Elite Status</div>
+                <div className="text-[10px] font-black uppercase leading-none">{user.email?.split('@')[0]}</div>
+                <div className="text-[7px] text-primary font-bold uppercase tracking-widest">Admin</div>
               </div>
-              <div className="w-10 h-10 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
-                <Plus className="w-6 h-6 text-primary" />
+              <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center">
+                <Plus className="w-4 h-4 text-primary" />
               </div>
             </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-8 relative">
+        <main className="flex-1 overflow-y-auto p-6 relative">
           {children}
           
           <Link href="/admin/products?new=true">
-            <Button className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/40 hover:scale-110 transition-transform z-50">
-              <Plus className="w-8 h-8" />
+            <Button className="fixed bottom-6 right-6 w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/20 hover:scale-110 transition-transform z-50">
+              <Plus className="w-6 h-6" />
             </Button>
           </Link>
         </main>
