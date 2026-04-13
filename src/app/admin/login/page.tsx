@@ -30,10 +30,11 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    if (username === 'khlex' && password === 'gaming123') {
+    // Private Admin Access Check
+    if (username.toLowerCase() === 'khlex' && password === 'gaming123') {
       localStorage.setItem('admin_override_session', 'active');
       toast({
-        title: "System Override Activated",
+        title: "Access Granted",
         description: "Welcome back, Commander.",
       });
       router.push('/admin/dashboard');
@@ -46,7 +47,7 @@ export default function AdminLoginPage() {
       localStorage.removeItem('admin_override_session');
       toast({
         title: "Access Granted",
-        description: "Credentials verified.",
+        description: "Credentials verified via Cloud.",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
@@ -73,7 +74,7 @@ export default function AdminLoginPage() {
           </div>
           <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">Admin Hub</CardTitle>
           <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-            Restricted access &bull; Authorized Personnel Only
+            Restricted access • Authorized Personnel Only
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
@@ -118,7 +119,7 @@ export default function AdminLoginPage() {
       </Card>
       
       <div className="mt-8 text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-        KHALEX Hub &bull; System v2.0
+        KHALEX Hub • System v2.0
       </div>
     </div>
   );

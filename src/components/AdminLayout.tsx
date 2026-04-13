@@ -43,22 +43,16 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
-    const checkAuth = () => {
-      const isOverrideActive = localStorage.getItem('admin_override_session') === 'active';
-      
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user || isOverrideActive) {
-          setIsAuthenticating(false);
-        } else {
-          router.push('/admin/login');
-        }
-      });
-
-      return unsubscribe;
-    };
-
-    const unsubscribeAuth = checkAuth();
+    const isOverrideActive = typeof window !== 'undefined' && localStorage.getItem('admin_override_session') === 'active';
     
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user || isOverrideActive) {
+        setIsAuthenticating(false);
+      } else {
+        router.replace('/admin/login');
+      }
+    });
+
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     
@@ -68,7 +62,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     window.addEventListener('offline', handleOffline);
     
     return () => {
-      unsubscribeAuth();
+      unsubscribe();
       clearInterval(timer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -88,7 +82,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (isAuthenticating) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">
-        Establishing Secure Connection...
+        Verifying Security Credentials...
       </div>
     );
   }
