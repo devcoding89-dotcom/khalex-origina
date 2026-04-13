@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useAuth } from '@/firebase';
@@ -20,19 +20,25 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
+  // Redirect if already logged in via override
+  useEffect(() => {
+    if (localStorage.getItem('admin_override_session') === 'active') {
+      router.push('/admin/dashboard');
+    }
+  }, [router]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    // SYSTEM OVERRIDE: Check for specific private credentials
+    // PRIVATE SYSTEM OVERRIDE
     if (username === 'khlex' && password === 'gaming123') {
       localStorage.setItem('admin_override_session', 'active');
       toast({
         title: "Override Granted",
-        description: "Welcome back, Commander Khlex.",
+        description: "Welcome back, Commander.",
       });
       router.push('/admin/dashboard');
-      setIsLoading(false);
       return;
     }
 
@@ -42,7 +48,7 @@ export default function AdminLoginPage() {
       localStorage.removeItem('admin_override_session');
       toast({
         title: "Access Granted",
-        description: "Welcome back, Commander.",
+        description: "Welcome back.",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
@@ -50,7 +56,7 @@ export default function AdminLoginPage() {
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: "Check your callsign and access key.",
+        description: "Check your credentials.",
       });
     } finally {
       setIsLoading(false);
@@ -81,8 +87,8 @@ export default function AdminLoginPage() {
                 required 
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
-                className="bg-background border-primary/10 h-12 font-bold uppercase"
+                placeholder="Username"
+                className="bg-background border-primary/10 h-12 font-bold"
               />
             </div>
             <div className="space-y-2">
@@ -92,7 +98,7 @@ export default function AdminLoginPage() {
                 required 
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
+                placeholder="Password"
                 className="bg-background border-primary/10 h-12"
               />
             </div>

@@ -3,7 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/use-navigation';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { 
@@ -46,15 +46,21 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const isFirebaseConfigured = !firebaseConfig.apiKey.includes('REPLACE_WITH');
 
   useEffect(() => {
+    // Immediate check for override
+    const isOverrideActive = localStorage.getItem('admin_override_session') === 'active';
+    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      const isOverrideActive = localStorage.getItem('admin_override_session') === 'active';
-      
       if (!user && !isOverrideActive) {
         router.push('/admin/login');
       } else {
         setIsAuthenticating(false);
       }
     });
+
+    // If override is active, we can show content immediately
+    if (isOverrideActive) {
+      setIsAuthenticating(false);
+    }
 
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -147,7 +153,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         {!isFirebaseConfigured && (
           <div className="bg-destructive/10 border-b border-destructive/20 p-2 text-center text-[10px] font-black uppercase tracking-widest text-destructive flex items-center justify-center gap-2">
             <AlertTriangle className="w-3 h-3" />
-            Warning: Firebase Keys are not linked. Database features will be disabled.
+            Warning: Database not connected. Link Firebase keys in src/firebase/config.ts
             <AlertTriangle className="w-3 h-3" />
           </div>
         )}
@@ -171,7 +177,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 ) : (
                   <>
                     <Wifi className="w-2.5 h-2.5" />
-                    OFFLINE
+                    DEMO MODE
                   </>
                 )}
               </Badge>
@@ -182,7 +188,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <input 
-                placeholder="Quick search..." 
+                placeholder="Search..." 
                 className="bg-background border border-primary/10 rounded-full h-8 pl-9 pr-4 text-[10px] w-48 focus:outline-none focus:border-primary transition-all uppercase font-bold"
               />
             </div>
