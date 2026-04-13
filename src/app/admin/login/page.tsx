@@ -1,9 +1,8 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,48 +20,47 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (localStorage.getItem('admin_override_session') === 'active' && auth.currentUser) {
-      router.replace('/admin/dashboard');
-    }
-  }, [router, auth.currentUser]);
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        localStorage.setItem('admin_override_session', 'active');
+        router.replace('/admin/dashboard');
+      }
+    });
+    return () => unsubscribe();
+  }, [router, auth]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // We attempt to use the provided username as an email or construct one
-      const email = username.includes('@') ? username : `${username}@khalexhub.com`;
+      // Construct email from username
+      const email = username.includes('@') ? username : `${username.toLowerCase()}@khalexhub.com`;
       
-      // Special handling for the master credentials to ensure they are linked to a real Firebase Auth session
-      // This is necessary because Firestore rules require a valid auth.uid to allow writes
+      // Attempt Firebase Auth login
       await signInWithEmailAndPassword(auth, email, password);
       
       localStorage.setItem('admin_override_session', 'active');
       toast({
         title: "Access Granted",
-        description: "Secure uplink established. Database is now live.",
+        description: "Secure uplink established. Cloud sync active.",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
       console.error(error);
       
-      // If it's the master password but the user doesn't exist in Firebase yet, 
-      // we tell them to create the admin user in the console.
+      // Handle "khlex" specifically for first-time setup guidance
       if (username.toLowerCase() === 'khlex' && password === 'gaming123') {
-        localStorage.setItem('admin_override_session', 'active');
-        toast({
+         toast({
           variant: "destructive",
-          title: "Database Auth Needed",
-          description: "Master password accepted, but you must create 'khlex@khalexhub.com' in the Firebase Console to enable cloud saving.",
+          title: "Cloud Login Required",
+          description: "You must create 'khlex@khalexhub.com' in your Firebase Console Auth tab with password 'gaming123' to enable cross-device syncing.",
         });
-        // We still allow them in, but with a warning that cloud saves will fail until they add the user
-        router.push('/admin/dashboard');
       } else {
         toast({
           variant: "destructive",
           title: "Access Denied",
-          description: "Incorrect callsign or access key.",
+          description: "Incorrect callsign or access key. Check your Firebase Auth users.",
         });
       }
     } finally {
@@ -88,7 +86,7 @@ export default function AdminLoginPage() {
         <CardContent className="p-8 pt-0">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign (e.g. khlex)</Label>
               <Input 
                 type="text" 
                 required 
@@ -121,13 +119,13 @@ export default function AdminLoginPage() {
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3">
              <AlertCircle className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Ensure your browser is connected to the internet to sync mission data with other devices.
+               Sync Notice: Ensure you have added your admin user to the Firebase Console to enable multi-device visibility.
              </p>
           </div>
 
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <div className="flex items-center justify-center gap-2 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-              <Lock className="w-3 h-3" /> Encrypted Connection Active
+              <Lock className="w-3 h-3" /> Encrypted Cloud Connection
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -10,7 +9,6 @@ import {
   query, 
   orderBy, 
   serverTimestamp,
-  Firestore,
   limit
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
@@ -92,26 +90,18 @@ export interface StoreSettings {
   taxRate: number;
 }
 
-export interface AuditLog {
-  id: string;
-  action: string;
-  target: string;
-  admin: string;
-  timestamp: string;
-}
-
 // --- STORE HOOK ---
 export function useStore() {
   const db = useFirestore();
 
   // Queries
-  const productsQuery = useMemo(() => query(collection(db, 'products'), limit(100)), [db]);
-  const ordersQuery = useMemo(() => query(collection(db, 'orders'), limit(100)), [db]);
+  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(100)), [db]);
+  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100)), [db]);
   const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(100)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
   // Data Stream
-  const { data: productsData } = useCollection<Product>(productsQuery);
+  const { data: productsData, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { data: ordersData } = useCollection<Order>(ordersQuery);
   const { data: customersData } = useCollection<Customer>(customersQuery);
   const { data: settingsData } = useDoc<StoreSettings>(settingsRef);
@@ -119,7 +109,6 @@ export function useStore() {
   const products = productsData || [];
   const orders = ordersData || [];
   const customers = customersData || [];
-  const auditLogs: AuditLog[] = []; 
   
   const settings: StoreSettings = settingsData || {
     storeName: 'KHALEX hub',
@@ -150,9 +139,6 @@ export function useStore() {
     };
 
     setDoc(ref, newProduct, { merge: true })
-      .then(() => {
-        toast({ title: "Cloud Sync Complete", description: "Product is now visible on all devices." });
-      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
@@ -172,9 +158,6 @@ export function useStore() {
     };
 
     setDoc(ref, updateData, { merge: true })
-      .then(() => {
-        toast({ title: "Asset Updated", description: "Changes synced to cloud." });
-      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
@@ -187,9 +170,6 @@ export function useStore() {
   const deleteProduct = (id: string) => {
     const ref = doc(db, 'products', id);
     deleteDoc(ref)
-      .then(() => {
-        toast({ title: "Asset Deployed", description: "Product removed from cloud." });
-      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
@@ -292,9 +272,6 @@ export function useStore() {
 
   const updateSettings = (s: StoreSettings) => {
     setDoc(settingsRef, s, { merge: true })
-      .then(() => {
-        toast({ title: "Settings Applied", description: "Global changes synced." });
-      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: settingsRef.path,
@@ -321,9 +298,9 @@ export function useStore() {
 
   return {
     products,
+    productsLoading,
     orders,
     customers,
-    auditLogs,
     settings,
     cart,
     addProduct,
