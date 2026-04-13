@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -10,7 +9,8 @@ import {
   query, 
   orderBy, 
   serverTimestamp,
-  Firestore
+  Firestore,
+  limit
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -102,10 +102,10 @@ export interface AuditLog {
 export function useStore() {
   const db = useFirestore();
 
-  // Queries
-  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc')), [db]);
-  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc')), [db]);
-  const customersQuery = useMemo(() => query(collection(db, 'customers'), orderBy('totalSpent', 'desc')), [db]);
+  // Queries - Using simple collection refs first to ensure visibility even if indexes are missing
+  const productsQuery = useMemo(() => query(collection(db, 'products'), limit(100)), [db]);
+  const ordersQuery = useMemo(() => query(collection(db, 'orders'), limit(100)), [db]);
+  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(100)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
   // Data Stream
@@ -114,6 +114,7 @@ export function useStore() {
   const { data: customersData } = useCollection<Customer>(customersQuery);
   const { data: settingsData } = useDoc<StoreSettings>(settingsRef);
 
+  // Fallback to local data or empty array
   const products = productsData || [];
   const orders = ordersData || [];
   const customers = customersData || [];
@@ -137,12 +138,14 @@ export function useStore() {
       ...p, 
       id, 
       createdAt: serverTimestamp(),
-      salesCount: 0,
-      views: 0,
+      salesCount: p.salesCount || 0,
+      views: p.views || 0,
       status: p.status || 'active',
       isFeatured: p.isFeatured || false,
       trackInventory: true,
-      stockAlert: p.stockAlert || 5
+      stockAlert: p.stockAlert || 5,
+      price: Number(p.price) || 0,
+      costPrice: Number(p.costPrice) || 0
     };
 
     setDoc(ref, newProduct, { merge: true }).catch(async (err) => {
@@ -156,7 +159,12 @@ export function useStore() {
 
   const updateProduct = (p: Product) => {
     const ref = doc(db, 'products', p.id);
-    const updateData = { ...p, updatedAt: serverTimestamp() };
+    const updateData = { 
+      ...p, 
+      updatedAt: serverTimestamp(),
+      price: Number(p.price),
+      costPrice: Number(p.costPrice)
+    };
 
     setDoc(ref, updateData, { merge: true }).catch(async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
@@ -216,7 +224,7 @@ export function useStore() {
       name: orderData.customerName,
       whatsapp: orderData.whatsapp,
       email: orderData.email || '',
-      totalSpent: (existingCustomer?.totalSpent || 0) + orderData.total,
+      totalSpent: (existingCustomer?.totalSpent || 0) + Number(orderData.total),
       orderCount: (existingCustomer?.orderCount || 0) + 1,
       lastOrderDate: serverTimestamp(),
       joinedDate: existingCustomer?.joinedDate || new Date().toISOString(),
