@@ -9,8 +9,7 @@ import {
   deleteDoc, 
   query, 
   orderBy, 
-  serverTimestamp,
-  Timestamp
+  serverTimestamp
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -190,7 +189,6 @@ export function useStore() {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newOrder }));
     });
 
-    // Update or Create Customer record
     const customerRef = doc(db, 'customers', orderData.whatsapp);
     const existingCustomer = customers.find(c => c.whatsapp === orderData.whatsapp);
     
