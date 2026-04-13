@@ -1,9 +1,8 @@
-
 "use client";
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { ShoppingCart, Gamepad2, UserCircle, Menu, X, Search, Radar } from 'lucide-react';
+import { ShoppingCart, Gamepad2, UserCircle, Menu, X, Search, Radar, Shield } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useState, useEffect } from 'react';
@@ -15,7 +14,12 @@ export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
+  useEffect(() => {
+    setIsLoggedIn(localStorage.getItem('gz_user_auth') === 'true');
+  }, []);
+
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   const links = [
@@ -101,9 +105,9 @@ export function Navigation() {
             </Button>
           </Link>
           
-          <Link href="/admin/login" className="hidden sm:inline-flex">
-            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:text-primary border border-transparent hover:border-primary/20">
-              <UserCircle className="w-5 h-5" />
+          <Link href={isLoggedIn ? "/profile" : "/login"} className="hidden sm:inline-flex">
+            <Button variant="ghost" size="icon" className={`h-8 w-8 rounded-full border border-transparent ${isLoggedIn ? 'text-primary' : 'hover:text-primary'}`}>
+              {isLoggedIn ? <Shield className="w-5 h-5" /> : <UserCircle className="w-5 h-5" />}
             </Button>
           </Link>
 
@@ -124,7 +128,8 @@ export function Navigation() {
           <Link href="/track-order" className="text-secondary flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
             <Radar className="w-4 h-4" /> Track Mission
           </Link>
-          <Link href="/admin/login" onClick={() => setIsMenuOpen(false)}>Admin Access</Link>
+          <Link href="/login" onClick={() => setIsMenuOpen(false)} className="text-primary">Personnel Portal</Link>
+          <Link href="/admin/login" onClick={() => setIsMenuOpen(false)} className="text-[10px] opacity-50">Admin</Link>
         </div>
       )}
     </nav>

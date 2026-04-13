@@ -53,7 +53,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     toast({ title: "Payment Updated", description: `Transaction status: ${newStatus}` });
   };
 
-  const waLink = `https://wa.me/${order.whatsapp}?text=Hi ${order.customerName}! Regarding your order ${order.id}...`;
+  const waLink = `https://wa.me/${order.whatsapp.replace(/\+/g, '')}?text=Hi ${order.customerName}! Regarding your mission ${order.id}...`;
 
   return (
     <AdminLayout>
@@ -65,9 +65,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           <div className="flex gap-2">
             <Button variant="outline" className="border-primary/20 h-9 text-[10px] uppercase font-black">
               <Printer className="w-3 h-3 mr-2" /> Invoice
-            </Button>
-            <Button variant="destructive" className="h-9 text-[10px] uppercase font-black">
-              <Trash2 className="w-3 h-3 mr-2" /> Delete
             </Button>
           </div>
         </div>
@@ -174,7 +171,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <textarea 
                     value={adminNote}
                     onChange={(e) => setAdminNote(e.target.value)}
-                    placeholder="Enter update for customer tracking..."
+                    placeholder="Enter update for customer tracking (e.g., 'Payment confirmed', 'Deployment started')..."
                     className="w-full bg-background border border-primary/20 rounded-md p-3 text-xs focus:border-primary outline-none min-h-[100px] resize-none"
                   />
                 </div>
@@ -225,8 +222,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
                 <Button asChild variant="outline" className="w-full border-primary/20 h-10 text-[10px] uppercase font-black">
-                  <Link href={`/admin/customers/${order.whatsapp}`}>
-                    View Personnel Profile <ExternalLink className="w-3 h-3 ml-2" />
+                  <Link href={`/admin/customers`}>
+                    View All Personnel <ExternalLink className="w-3 h-3 ml-2" />
                   </Link>
                 </Button>
               </CardContent>

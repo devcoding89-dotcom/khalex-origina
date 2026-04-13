@@ -179,18 +179,20 @@ export function useStore() {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newOrder }));
     });
 
-    // Update or Create Customer
+    // Update or Create Customer record
     const customerRef = doc(db, 'customers', orderData.whatsapp);
+    const existingCustomer = customers.find(c => c.whatsapp === orderData.whatsapp);
+    
     setDoc(customerRef, {
       id: orderData.whatsapp,
       name: orderData.customerName,
       whatsapp: orderData.whatsapp,
       email: orderData.email || '',
-      totalSpent: (customers.find(c => c.whatsapp === orderData.whatsapp)?.totalSpent || 0) + orderData.total,
-      orderCount: (customers.find(c => c.whatsapp === orderData.whatsapp)?.orderCount || 0) + 1,
+      totalSpent: (existingCustomer?.totalSpent || 0) + orderData.total,
+      orderCount: (existingCustomer?.orderCount || 0) + 1,
       lastOrderDate: serverTimestamp(),
-      joinedDate: customers.find(c => c.whatsapp === orderData.whatsapp)?.joinedDate || new Date().toISOString(),
-      group: 'regular'
+      joinedDate: existingCustomer?.joinedDate || new Date().toISOString(),
+      group: existingCustomer?.group || 'regular'
     }, { merge: true });
 
     return { ...newOrder, id };
