@@ -33,9 +33,9 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Map 'khlex' callsign to the email set in Firebase Console
-      const email = username.toLowerCase() === 'khlex' 
-        ? 'khlex@khalexhub.com' 
+      // Map 'admin' callsign to the email for Firebase Auth
+      const email = username.toLowerCase() === 'admin' 
+        ? 'admin@khalexhub.com' 
         : (username.includes('@') ? username : `${username.toLowerCase()}@khalexhub.com`);
       
       await signInWithEmailAndPassword(auth, email, password);
@@ -49,12 +49,10 @@ export default function AdminLoginPage() {
       console.error('Login error:', error.code, error.message);
       let message = "Incorrect callsign or access key.";
       
-      if (error.code === 'auth/user-not-found') {
-        message = "User not found. Please add 'khlex@khalexhub.com' to your Firebase Console Auth tab.";
-      } else if (error.code === 'auth/wrong-password') {
-        message = "Invalid password for this callsign.";
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        message = "Access Denied. Ensure you have added 'admin@khalexhub.com' to your Firebase Console Auth tab.";
       } else if (error.code === 'auth/network-request-failed') {
-        message = "Network error. Please check your internet connection.";
+        message = "Network error. The connection was blocked.";
       }
 
       toast({
@@ -85,7 +83,7 @@ export default function AdminLoginPage() {
         <CardContent className="p-8 pt-0">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign (e.g. khlex)</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign (e.g. admin)</Label>
               <Input 
                 type="text" 
                 required 
@@ -124,7 +122,7 @@ export default function AdminLoginPage() {
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3">
              <AlertCircle className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Sync Notice: Use 'khlex' to log in. Ensure you have added 'khlex@khalexhub.com' to your Firebase Console Auth tab first.
+               Sync Notice: Use 'admin' to log in. Ensure you have added 'admin@khalexhub.com' to your Firebase Console Auth tab first.
              </p>
           </div>
         </CardContent>
