@@ -42,11 +42,11 @@ export default function CheckoutPage() {
     });
     
     const message = `ORDER CONFIRMATION%0A` +
-      `ID: ${order.id}%0A` +
+      `Order ID: ${order.id}%0A` +
       `Customer: ${order.customerName}%0A` +
       `Items:%0A` + 
       order.items.map(i => `- ${i.name} x${i.quantity}`).join('%0A') + 
-      `%0A%0ATotal: ${settings.currencySymbol}${order.total.toLocaleString()}%0A%0APlease provide payment details.`;
+      `%0A%0ATotal: ${settings.currencySymbol}${order.total.toLocaleString()}%0A%0AHello, I just placed an order. Please send me payment details.`;
 
     const waLink = `https://wa.me/${settings.whatsapp.replace(/\+/g, '')}?text=${message}`;
     
@@ -60,13 +60,13 @@ export default function CheckoutPage() {
   if (isSuccess) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center p-4">
-        <div className="text-center space-y-6 max-w-md">
-          <div className="w-24 h-24 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
-            <CheckCircle2 className="w-16 h-16 text-primary" />
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="w-20 h-20 bg-primary/20 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="w-12 h-12 text-primary" />
           </div>
-          <h1 className="text-5xl font-black uppercase italic tracking-tighter">Mission Accomplished</h1>
-          <p className="text-muted-foreground text-lg uppercase font-bold tracking-widest">Order transmission sent. Redirecting to WhatsApp for final extraction.</p>
-          <Button onClick={() => router.push('/')} className="w-full h-14 bg-primary text-primary-foreground font-black uppercase text-xl">Return to Base</Button>
+          <h1 className="text-3xl md:text-4xl font-black uppercase italic tracking-tighter">Order Placed!</h1>
+          <p className="text-muted-foreground text-sm uppercase font-bold tracking-widest">Your order has been sent. We are redirecting you to WhatsApp to complete your payment.</p>
+          <Button onClick={() => router.push('/')} className="w-full h-12 bg-primary text-primary-foreground font-black uppercase text-base">Go Home</Button>
         </div>
       </div>
     );
@@ -77,8 +77,8 @@ export default function CheckoutPage() {
       <div className="min-h-screen flex flex-col">
         <Navigation />
         <div className="flex-1 flex flex-col items-center justify-center p-4">
-          <h1 className="text-4xl font-black uppercase mb-4">No Intel to Process</h1>
-          <Button onClick={() => router.push('/products')} className="bg-primary text-primary-foreground">Back to Armory</Button>
+          <h1 className="text-2xl font-black uppercase mb-4">Your cart is empty</h1>
+          <Button onClick={() => router.push('/products')} className="bg-primary text-primary-foreground uppercase text-[10px] font-black h-10 px-6">Go to Shop</Button>
         </div>
       </div>
     );
@@ -87,65 +87,65 @@ export default function CheckoutPage() {
   return (
     <div className="min-h-screen flex flex-col">
       <Navigation />
-      <main className="flex-1 py-12 container mx-auto px-4">
-        <div className="flex justify-between items-center mb-12">
-          <h1 className="text-5xl font-black uppercase tracking-tighter italic">Checkout</h1>
-          <Button variant="ghost" onClick={() => router.back()} className="text-muted-foreground hover:text-primary">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Modify Loadout
+      <main className="flex-1 py-10 container mx-auto px-4">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-4xl md:text-5xl font-black uppercase tracking-tighter italic">Checkout</h1>
+          <Button variant="ghost" onClick={() => router.back()} className="text-[10px] font-black uppercase text-muted-foreground hover:text-primary">
+            <ArrowLeft className="w-3 h-3 mr-2" /> Edit Cart
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           <div className="lg:col-span-2">
-            <form onSubmit={handlePlaceOrder} id="checkout-form" className="space-y-8">
+            <form onSubmit={handlePlaceOrder} id="checkout-form" className="space-y-6">
               <Card className="glass border-primary/20">
-                <CardHeader>
-                  <CardTitle className="uppercase font-black text-xl tracking-widest">Personnel Data</CardTitle>
+                <CardHeader className="py-4">
+                  <CardTitle className="uppercase font-black text-lg tracking-widest">Your Information</CardTitle>
                 </CardHeader>
-                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <Label className="uppercase font-black text-[10px] tracking-widest text-primary">Callsign (Full Name)</Label>
-                    <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-background h-12" placeholder="Ghost Riley" />
+                <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-6">
+                  <div className="space-y-1">
+                    <Label className="uppercase font-black text-[8px] tracking-widest text-primary">Full Name</Label>
+                    <Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-background h-10 text-xs" placeholder="Enter your name" />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="uppercase font-black text-[10px] tracking-widest text-primary">Comms Channel (WhatsApp)</Label>
-                    <Input required value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="bg-background h-12" placeholder="+234..." />
+                  <div className="space-y-1">
+                    <Label className="uppercase font-black text-[8px] tracking-widest text-primary">WhatsApp Number</Label>
+                    <Input required value={formData.whatsapp} onChange={e => setFormData({...formData, whatsapp: e.target.value})} className="bg-background h-10 text-xs" placeholder="e.g. 08012345678" />
                   </div>
-                  <div className="space-y-2 md:col-span-2">
-                    <Label className="uppercase font-black text-[10px] tracking-widest text-primary">Encrypted Email (Optional)</Label>
-                    <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="bg-background h-12" placeholder="ghost@taskforce141.com" />
+                  <div className="space-y-1 md:col-span-2">
+                    <Label className="uppercase font-black text-[8px] tracking-widest text-primary">Email (Optional)</Label>
+                    <Input type="email" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} className="bg-background h-10 text-xs" placeholder="you@example.com" />
                   </div>
                 </CardContent>
               </Card>
 
               {hasDigitalOrService && (
                 <Card className="glass border-secondary/20">
-                  <CardHeader>
-                    <CardTitle className="uppercase font-black text-xl tracking-widest text-secondary">Asset Credentials (COD Mobile)</CardTitle>
+                  <CardHeader className="py-4">
+                    <CardTitle className="uppercase font-black text-lg tracking-widest text-secondary">Game Details (COD Mobile)</CardTitle>
                   </CardHeader>
-                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[10px] tracking-widest text-secondary">Player UID</Label>
-                      <Input required value={formData.codUid} onChange={e => setFormData({...formData, codUid: e.target.value})} className="bg-background h-12" placeholder="67123456789..." />
+                  <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-6">
+                    <div className="space-y-1">
+                      <Label className="uppercase font-black text-[8px] tracking-widest text-secondary">Player UID</Label>
+                      <Input required value={formData.codUid} onChange={e => setFormData({...formData, codUid: e.target.value})} className="bg-background h-10 text-xs" placeholder="Enter your UID" />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[10px] tracking-widest text-secondary">In-Game Name (IGN)</Label>
-                      <Input required value={formData.codIgn} onChange={e => setFormData({...formData, codIgn: e.target.value})} className="bg-background h-12" placeholder="Ghost_141" />
+                    <div className="space-y-1">
+                      <Label className="uppercase font-black text-[8px] tracking-widest text-secondary">In-Game Name (IGN)</Label>
+                      <Input required value={formData.codIgn} onChange={e => setFormData({...formData, codIgn: e.target.value})} className="bg-background h-10 text-xs" placeholder="Enter your game name" />
                     </div>
                   </CardContent>
                 </Card>
               )}
 
               <Card className="glass border-white/10">
-                <CardHeader>
-                  <CardTitle className="uppercase font-black text-xl tracking-widest">Payment Extraction</CardTitle>
+                <CardHeader className="py-4">
+                  <CardTitle className="uppercase font-black text-lg tracking-widest">Payment Method</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-4 p-4 rounded-lg bg-primary/5 border border-primary/20">
-                    <MessageSquare className="w-8 h-8 text-primary" />
+                <CardContent className="pb-6">
+                  <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <MessageSquare className="w-6 h-6 text-primary" />
                     <div>
-                      <div className="font-bold">WHATSAPP SETTLEMENT</div>
-                      <div className="text-xs text-muted-foreground">Complete payment manually after redirect. We support Card, Crypto, and Bank Transfer.</div>
+                      <div className="font-bold text-xs uppercase">WhatsApp Payment</div>
+                      <div className="text-[8px] text-muted-foreground uppercase">You will be sent a message to complete your payment.</div>
                     </div>
                   </div>
                 </CardContent>
@@ -155,49 +155,49 @@ export default function CheckoutPage() {
 
           <div className="space-y-6">
             <Card className="bg-card border-primary/30 neon-glow sticky top-24">
-              <CardHeader className="border-b border-primary/10">
-                <CardTitle className="text-center font-black uppercase italic text-2xl tracking-tighter">Manifest Summary</CardTitle>
+              <CardHeader className="border-b border-primary/10 py-4">
+                <CardTitle className="text-center font-black uppercase italic text-xl tracking-tighter">Order Summary</CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="max-h-[300px] overflow-y-auto px-6 py-4 space-y-4">
+                <div className="max-h-[250px] overflow-y-auto px-6 py-4 space-y-4">
                   {cart.map(item => (
-                    <div key={item.id} className="flex justify-between items-center gap-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 relative rounded overflow-hidden border">
+                    <div key={item.id} className="flex justify-between items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 relative rounded overflow-hidden border">
                           <Image src={item.imageUrl} alt="" fill className="object-cover" />
                         </div>
-                        <div className="text-xs">
+                        <div className="text-[10px]">
                           <div className="font-bold line-clamp-1">{item.name}</div>
-                          <div className="text-muted-foreground">Qty: {item.quantity}</div>
+                          <div className="text-muted-foreground uppercase text-[8px]">Qty: {item.quantity}</div>
                         </div>
                       </div>
-                      <div className="font-black text-primary">{settings.currencySymbol}{(item.price * item.quantity).toLocaleString()}</div>
+                      <div className="font-black text-primary text-xs">{settings.currencySymbol}{(item.price * item.quantity).toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
               </CardContent>
-              <CardFooter className="flex-col p-6 pt-0 border-t border-primary/10 mt-4">
+              <CardFooter className="flex-col p-6 pt-0 border-t border-primary/10 mt-2">
                 <div className="w-full py-4 space-y-2">
-                  <div className="flex justify-between text-muted-foreground text-sm font-bold uppercase">
+                  <div className="flex justify-between text-muted-foreground text-[10px] font-bold uppercase">
                     <span>Subtotal</span>
                     <span>{settings.currencySymbol}{subtotal.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-secondary text-sm font-black uppercase italic">
-                    <span>Tax / Fee</span>
+                  <div className="flex justify-between text-secondary text-[10px] font-black uppercase italic">
+                    <span>Tax</span>
                     <span>{settings.currencySymbol}0</span>
                   </div>
                   <div className="flex justify-between items-center pt-2">
-                    <span className="text-xl font-black uppercase">Total Due</span>
-                    <span className="text-4xl font-black text-primary italic tracking-tighter">{settings.currencySymbol}{subtotal.toLocaleString()}</span>
+                    <span className="text-base font-black uppercase">Total Due</span>
+                    <span className="text-3xl font-black text-primary italic tracking-tighter">{settings.currencySymbol}{subtotal.toLocaleString()}</span>
                   </div>
                 </div>
                 <Button 
                   form="checkout-form"
                   type="submit" 
                   disabled={isProcessing}
-                  className="w-full h-16 bg-primary text-primary-foreground font-black uppercase text-xl group hover:shadow-[0_0_30px_rgba(0,255,136,0.6)]"
+                  className="w-full h-12 bg-primary text-primary-foreground font-black uppercase text-base group hover:shadow-[0_0_20px_rgba(0,255,136,0.4)]"
                 >
-                  {isProcessing ? 'Transmitting...' : 'Execute Order'}
+                  {isProcessing ? 'Processing...' : 'Place Order'}
                 </Button>
               </CardFooter>
             </Card>

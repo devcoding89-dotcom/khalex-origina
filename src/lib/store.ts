@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -116,7 +117,7 @@ export function useStore() {
   const products = productsData || [];
   const orders = ordersData || [];
   const customers = customersData || [];
-  const auditLogs: AuditLog[] = []; // Initializing as empty for now to prevent crashes
+  const auditLogs: AuditLog[] = []; 
   
   const settings: StoreSettings = settingsData || {
     storeName: 'KHALEX hub',
@@ -181,7 +182,7 @@ export function useStore() {
         status: 'pending', 
         timestamp: new Date().toISOString(), 
         by: 'System', 
-        note: 'Mission initiated. Awaiting command verification.' 
+        note: 'Order received. We are processing it.' 
       }]
     };
     
@@ -218,8 +219,8 @@ export function useStore() {
       timeline: [...currentTimeline, { 
         status, 
         timestamp: new Date().toISOString(), 
-        by: 'Commander', 
-        note: customNote || `Strategic status updated to ${status.toUpperCase()}` 
+        by: 'Admin', 
+        note: customNote || `Order status updated to ${status.toUpperCase()}` 
       }] 
     }, { merge: true }).catch(err => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update' }));

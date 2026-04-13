@@ -26,7 +26,7 @@ function ProductsContent() {
   });
 
   const categories: { label: string; value: Category | 'all' }[] = [
-    { label: 'All Gear', value: 'all' },
+    { label: 'All Products', value: 'all' },
     { label: 'Phones', value: 'phones' },
     { label: 'Laptops', value: 'laptops' },
     { label: 'Gadgets', value: 'gadgets' },
@@ -38,17 +38,17 @@ function ProductsContent() {
     <div className="min-h-screen flex flex-col">
       <Navigation />
       
-      <main className="flex-1 py-12 bg-card/10">
+      <main className="flex-1 py-10 bg-card/10">
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-8 mb-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
             <div>
-              <h1 className="text-5xl font-black uppercase tracking-tighter mb-2">
-                {searchQuery ? `SEARCH: "${searchQuery}"` : categoryFilter ? categoryFilter.toUpperCase() : 'THE ARMORY'}
+              <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tighter mb-1">
+                {searchQuery ? `Searching: "${searchQuery}"` : categoryFilter ? categoryFilter.toUpperCase() : 'Our Shop'}
               </h1>
-              <div className="h-1 w-24 bg-primary" />
+              <div className="h-1 w-16 bg-primary" />
               {searchQuery && (
-                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground mt-2">
-                  Showing {filteredProducts.length} results for your radar sweep
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground mt-2">
+                  Found {filteredProducts.length} items
                 </p>
               )}
             </div>
@@ -58,7 +58,7 @@ function ProductsContent() {
                 <Link key={cat.value} href={cat.value === 'all' ? '/products' : `/products?category=${cat.value}`}>
                   <Button 
                     variant={categoryFilter === cat.value || (!categoryFilter && cat.value === 'all') ? 'default' : 'outline'}
-                    className={`uppercase font-bold tracking-wider ${
+                    className={`uppercase font-bold tracking-wider text-[10px] h-9 ${
                       categoryFilter === cat.value || (!categoryFilter && cat.value === 'all') 
                         ? 'bg-primary text-primary-foreground' 
                         : 'border-primary/20 hover:border-primary text-foreground'
@@ -72,16 +72,16 @@ function ProductsContent() {
           </div>
 
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
           ) : (
-            <div className="text-center py-24 bg-card rounded-xl border border-dashed border-primary/20">
-              <h3 className="text-2xl font-bold mb-2 uppercase">No items found in this section</h3>
-              <p className="text-muted-foreground uppercase text-xs font-bold tracking-widest">Adjust your search parameters or check a different category.</p>
-              <Button asChild variant="link" className="text-primary uppercase mt-4 font-black">
+            <div className="text-center py-20 bg-card rounded-xl border border-dashed border-primary/20">
+              <h3 className="text-lg font-bold mb-1 uppercase">No items found</h3>
+              <p className="text-muted-foreground uppercase text-[9px] font-bold tracking-widest">Try a different search or category.</p>
+              <Button asChild variant="link" className="text-primary uppercase mt-3 font-black text-[10px]">
                 <Link href="/products">View All Products</Link>
               </Button>
             </div>
@@ -94,7 +94,7 @@ function ProductsContent() {
 
 export default function ProductsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">LOADING ARMORY...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">Loading Shop...</div>}>
       <ProductsContent />
     </Suspense>
   );
