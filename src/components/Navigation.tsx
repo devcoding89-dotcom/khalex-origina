@@ -35,13 +35,17 @@ export function Navigation() {
     }
   };
 
+  const storeNameParts = settings.storeName.split(' ');
+  const firstName = storeNameParts[0] || 'KHALEX';
+  const otherNames = storeNameParts.slice(1).join(' ') || 'hub';
+
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/90 backdrop-blur-xl">
-      <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+      <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 group shrink-0">
-          <Gamepad2 className="w-10 h-10 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_12px_rgba(0,255,136,0.5)]" />
-          <span className="text-2xl font-headline font-black tracking-tighter italic hidden sm:inline">
-            {settings.storeName.split(' ')[0]}<span className="text-primary neon-text">{settings.storeName.split(' ').slice(1).join(' ')}</span>
+          <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_12px_rgba(0,255,136,0.5)]" />
+          <span className="text-xl sm:text-2xl font-headline font-black tracking-tighter italic block">
+            {firstName}<span className="text-primary neon-text">{otherNames}</span>
           </span>
         </Link>
 
@@ -62,7 +66,7 @@ export function Navigation() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 ml-auto lg:ml-0">
           {/* Search Toggle */}
           <div className="relative flex items-center">
             {isSearchOpen ? (
@@ -86,7 +90,7 @@ export function Navigation() {
           </div>
 
           <Link href="/cart">
-            <Button variant="ghost" className="relative h-12 px-4 sm:px-6 rounded-full border border-white/5 hover:border-primary group bg-white/5">
+            <Button variant="ghost" className="relative h-12 px-2 sm:px-6 rounded-full border border-white/5 hover:border-primary group bg-white/5">
               <ShoppingCart className="w-5 h-5 sm:mr-2" />
               <span className="font-black text-xs uppercase tracking-widest mr-2 hidden md:inline">Cart</span>
               {cartCount > 0 && (

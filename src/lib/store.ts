@@ -280,16 +280,23 @@ export function useStore() {
     if (savedOrders) setOrders(JSON.parse(savedOrders));
     if (savedCustomers) setCustomers(JSON.parse(savedCustomers));
     
+    // Force specific brand info to prevent stale data
+    const baseSettings = {
+      storeName: 'KHALEX hub',
+      whatsapp: '09166905298',
+      email: 'khaleedadefemi1@gmail.com',
+      address: 'no7 hiltop estate aboru lagos',
+      currencySymbol: '₦'
+    };
+
     if (savedSettings) {
       const parsed = JSON.parse(savedSettings);
       setSettings({
         ...parsed,
-        storeName: 'KHALEX hub',
-        whatsapp: '09166905298',
-        email: 'khaleedadefemi1@gmail.com',
-        address: 'no7 hiltop estate aboru lagos',
-        currencySymbol: '₦'
+        ...baseSettings
       });
+    } else {
+      setSettings(prev => ({ ...prev, ...baseSettings }));
     }
     
     if (savedLogs) setAuditLogs(JSON.parse(savedLogs));
@@ -313,7 +320,7 @@ export function useStore() {
       id: `log-${Date.now()}`,
       action,
       target,
-      admin: localStorage.getItem('gz_admin_user') || 'System',
+      admin: typeof window !== 'undefined' ? localStorage.getItem('gz_admin_user') || 'System' : 'System',
       timestamp: new Date().toISOString(),
       details,
       ip: '127.0.0.1'
@@ -434,6 +441,7 @@ export function useStore() {
   };
 
   const updateOrderStatus = (id: string, status: OrderStatus, note?: string) => {
+    const adminUser = typeof window !== 'undefined' ? localStorage.getItem('gz_admin_user') || 'Admin' : 'Admin';
     setOrders(orders.map(o => o.id === id ? { 
       ...o, 
       status, 
@@ -441,7 +449,7 @@ export function useStore() {
       timeline: [...o.timeline, { 
         status, 
         timestamp: new Date().toISOString(), 
-        by: localStorage.getItem('gz_admin_user') || 'Admin', 
+        by: adminUser, 
         note 
       }]
     } : o));
