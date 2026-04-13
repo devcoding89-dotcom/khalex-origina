@@ -23,7 +23,8 @@ import {
   Clock,
   Zap,
   Wifi,
-  LogOut
+  LogOut,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -132,6 +133,18 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 </Link>
               );
             })}
+
+            <div className="pt-4 mt-4 border-t border-primary/5">
+              <Link href="/">
+                <Button 
+                  variant="ghost" 
+                  className="w-full justify-start gap-3 h-9 text-[10px] font-black uppercase tracking-widest text-secondary hover:bg-secondary/10 hover:text-secondary"
+                >
+                  <ExternalLink className="w-4 h-4 shrink-0" />
+                  {isSidebarOpen && <span>View Website</span>}
+                </Button>
+              </Link>
+            </div>
           </nav>
 
           <div className="p-4 border-t">
