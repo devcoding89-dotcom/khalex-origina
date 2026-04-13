@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Loader2, Lock } from 'lucide-react';
+import { ShieldCheck, Loader2, Lock, AlertCircle } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -32,21 +32,17 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Direct credentials check as requested
+      // Direct credentials check as requested: admin / gaming2025
       if (username.toLowerCase() === 'admin' && password === 'gaming2025') {
         
-        // Ensure a Firebase connection is active for the database sync
-        try {
-          await signInAnonymously(auth);
-        } catch (authErr) {
-          console.warn('Firebase connection failed, continuing with local session:', authErr);
-        }
+        // Connect to Firebase Cloud silently to enable database writes
+        await signInAnonymously(auth);
         
         localStorage.setItem('khalex_admin_session', 'active');
         
         toast({
-          title: "System Access Granted",
-          description: "Database linked. Opening dashboard...",
+          title: "Access Granted",
+          description: "Cloud database linked. Loading your armory...",
         });
         
         router.push('/admin/dashboard');
@@ -54,14 +50,15 @@ export default function AdminLoginPage() {
         toast({
           variant: "destructive",
           title: "Access Denied",
-          description: "Invalid credentials. Please check your username and password.",
+          description: "Invalid credentials. Please use 'admin' and 'gaming2025'.",
         });
       }
     } catch (error: any) {
+      console.error(error);
       toast({
         variant: "destructive",
-        title: "Connection Error",
-        description: "Failed to link with the cloud server. Check your network.",
+        title: "Database Sync Failed",
+        description: "Could not connect to the cloud. Check your internet.",
       });
     } finally {
       setIsLoading(false);
@@ -78,9 +75,9 @@ export default function AdminLoginPage() {
               <ShieldCheck className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">KHALEX ADMIN</CardTitle>
+          <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">KHALEX Hub Admin</CardTitle>
           <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-            Secured Access • Authorized Personnel Only
+            System Manifest Login • Authorized Personnel
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
@@ -118,18 +115,23 @@ export default function AdminLoginPage() {
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
                 </span>
-              ) : "Unlock Dashboard"}
+              ) : "Enter Dashboard"}
             </Button>
           </form>
 
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3 items-center">
              <Lock className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Secure cloud sync is active. Your changes will reflect on all devices.
+               Real-time cloud sync is active. Updates will show on all devices instantly.
              </p>
           </div>
         </CardContent>
       </Card>
+      
+      <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
+        <AlertCircle className="w-3 h-3 text-secondary" />
+        <span>Use 'admin' and 'gaming2025' to unlock</span>
+      </div>
     </div>
   );
 }
