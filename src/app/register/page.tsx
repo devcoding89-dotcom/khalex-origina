@@ -70,7 +70,7 @@ export default function CustomerRegister() {
       console.error(error);
       let message = "Could not create account. Please try again.";
       
-      if (error.code === 'auth/invalid-api-key' || error.message.includes('API key')) {
+      if (error.code === 'auth/invalid-api-key' || error.message?.includes('API key')) {
         message = "Configuration Missing: You must paste your real keys from the Firebase Console into src/firebase/config.ts.";
       } else if (error.code === 'auth/email-already-in-use') {
         message = "This email is already registered. Try logging in.";
@@ -87,7 +87,7 @@ export default function CustomerRegister() {
   };
 
   if (userLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">Loading...</div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">Loading...</div>;
   }
 
   return (
@@ -131,7 +131,7 @@ export default function CustomerRegister() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password" + className="text-[10px] font-black uppercase tracking-widest">Password</Label>
+                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest">Password</Label>
                 <Input 
                   id="password" 
                   type="password" 
@@ -143,7 +143,7 @@ export default function CustomerRegister() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword" + className="text-[10px] font-black uppercase tracking-widest">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-widest">Confirm Password</Label>
                 <Input 
                   id="confirmPassword" 
                   type="password" 
