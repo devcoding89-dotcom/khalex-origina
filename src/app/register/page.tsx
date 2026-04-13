@@ -62,8 +62,8 @@ export default function CustomerRegister() {
       }
       
       toast({
-        title: "Welcome to the Shop",
-        description: "Your account is ready. Happy shopping!",
+        title: "Welcome!",
+        description: "Your account is ready. You can now start shopping.",
       });
       router.push('/');
     } catch (error: any) {
@@ -71,7 +71,7 @@ export default function CustomerRegister() {
       let message = "Could not create account. Please try again.";
       
       if (error.code === 'auth/invalid-api-key' || error.message?.includes('API key')) {
-        message = "Configuration Missing: You must paste your real keys from the Firebase Console into src/firebase/config.ts.";
+        message = "Link Error: You must paste your real keys from the Firebase Console into src/firebase/config.ts.";
       } else if (error.code === 'auth/email-already-in-use') {
         message = "This email is already registered. Try logging in.";
       }
@@ -99,9 +99,9 @@ export default function CustomerRegister() {
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <UserPlus className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter text-primary">Join the Hub</CardTitle>
+            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter text-primary">Create Account</CardTitle>
             <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-              Create your account to start shopping
+              Fill in your details to get started
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleRegister}>
@@ -111,7 +111,7 @@ export default function CustomerRegister() {
                 <Input 
                   id="name" 
                   type="text"
-                  placeholder="Your Name" 
+                  placeholder="Enter your name" 
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
                   required 
@@ -123,7 +123,7 @@ export default function CustomerRegister() {
                 <Input 
                   id="email" 
                   type="email"
-                  placeholder="name@email.com" 
+                  placeholder="name@example.com" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   required 
@@ -147,7 +147,7 @@ export default function CustomerRegister() {
                 <Input 
                   id="confirmPassword" 
                   type="password" 
-                  placeholder="Re-type your password"
+                  placeholder="Repeat your password"
                   value={confirmPassword} 
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -158,7 +158,7 @@ export default function CustomerRegister() {
               <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex gap-2 items-center">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <p className="text-[8px] text-muted-foreground uppercase font-bold leading-tight">
-                  Your account will be safe and encrypted.
+                  Your information is safe and secure.
                 </p>
               </div>
             </CardContent>
@@ -168,7 +168,7 @@ export default function CustomerRegister() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <div className="flex justify-center w-full mt-2">
@@ -176,7 +176,7 @@ export default function CustomerRegister() {
                   href="/login"
                   className="text-[10px] uppercase font-black text-primary hover:underline"
                 >
-                  Already have an account? Login here
+                  Already have an account? Log in
                 </Link>
               </div>
             </CardFooter>

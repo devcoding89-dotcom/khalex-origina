@@ -37,21 +37,19 @@ export default function CustomerLogin() {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Welcome Back",
-        description: "Login successful.",
+        description: "You are now logged in.",
       });
       router.push('/');
     } catch (error: any) {
       console.error(error);
       let message = "Please check your email and password.";
       
-      if (error.code === 'auth/invalid-api-key') {
-        message = "CRITICAL: Firebase API Key is missing. Go to src/firebase/config.ts and paste your real keys from the Firebase Console.";
+      if (error.code === 'auth/invalid-api-key' || error.message?.includes('API key')) {
+        message = "Link Error: Please paste your real keys from the Firebase Console into src/firebase/config.ts.";
       } else if (error.code === 'auth/user-not-found') {
         message = "No account found with this email.";
       } else if (error.code === 'auth/wrong-password') {
         message = "Incorrect password.";
-      } else if (error.message) {
-        message = error.message;
       }
 
       toast({
@@ -77,13 +75,13 @@ export default function CustomerLogin() {
       toast({
         variant: "destructive",
         title: "Google Login Failed",
-        description: error.message,
+        description: "Could not link to Google. Please try again.",
       });
     }
   };
 
   if (userLoading) {
-    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">Checking status...</div>;
+    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">Checking...</div>;
   }
 
   return (
@@ -95,9 +93,9 @@ export default function CustomerLogin() {
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <UserCircle className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Login</CardTitle>
+            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Welcome Back</CardTitle>
             <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-              Enter your details to start shopping
+              Sign in to your account to shop
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
@@ -130,7 +128,7 @@ export default function CustomerLogin() {
               <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex gap-2 items-center">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <p className="text-[8px] text-muted-foreground uppercase font-bold leading-tight">
-                  Your account is safe and secure.
+                  Your account is protected.
                 </p>
               </div>
             </CardContent>
@@ -140,7 +138,7 @@ export default function CustomerLogin() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Checking...' : 'Login'}
+                {isLoading ? 'Signing in...' : 'Log In'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <Button 
@@ -156,7 +154,7 @@ export default function CustomerLogin() {
                   href="/register"
                   className="text-[10px] uppercase font-black text-primary hover:underline"
                 >
-                  Don't have an account? Register Now
+                  New customer? Register here
                 </Link>
               </div>
             </CardFooter>

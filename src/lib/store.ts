@@ -181,7 +181,7 @@ export function useStore() {
         status: 'pending', 
         timestamp: new Date().toISOString(), 
         by: 'System', 
-        note: 'Order received. We are processing it.' 
+        note: 'Order received. We are checking it.' 
       }]
     };
     

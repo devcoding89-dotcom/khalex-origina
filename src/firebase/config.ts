@@ -4,9 +4,8 @@
  * 
  * 1. Go to your Firebase Console: https://console.firebase.google.com/
  * 2. Click on your project "GameZone Marketplace".
- * 3. Look for the "Web" icon (</>) or go to Project Settings to find your app.
- * 4. Copy the 'firebaseConfig' object they give you.
- * 5. Replace the placeholder values below with your real keys.
+ * 3. Add a "Web App" (the </> icon).
+ * 4. Copy the 'firebaseConfig' object and replace the values below.
  */
 export const firebaseConfig = {
   apiKey: "REPLACE_WITH_YOUR_ACTUAL_API_KEY",
