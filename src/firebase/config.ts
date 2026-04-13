@@ -1,19 +1,19 @@
-
 /**
  * STEP-BY-STEP LINKING INSTRUCTIONS:
  * 
  * 1. Go to your Firebase Console: https://console.firebase.google.com/
- * 2. Click on your project "GameZone Marketplace".
- * 3. Click the Web icon (</>) to add a new app.
- * 4. Copy the 'firebaseConfig' object and replace the placeholder values below.
- * 5. In the Firebase Console, go to "Authentication" and enable "Email/Password".
- * 6. In the Firebase Console, go to "Firestore Database" and click "Create Database".
+ * 2. Select your project.
+ * 3. Click the Web icon (</>) to register a new app.
+ * 4. Copy the 'firebaseConfig' object they show you.
+ * 5. Replace the placeholder values below with your real keys.
+ * 
+ * IMPORTANT: Without these keys, your data will NOT show up on other phones.
  */
 export const firebaseConfig = {
-  apiKey: "REPLACE_WITH_YOUR_ACTUAL_API_KEY",
-  authDomain: "REPLACE_WITH_YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "REPLACE_WITH_YOUR_PROJECT_ID",
-  storageBucket: "REPLACE_WITH_YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "REPLACE_WITH_YOUR_SENDER_ID",
-  appId: "REPLACE_WITH_YOUR_APP_ID"
+  apiKey: "PASTE_YOUR_API_KEY_HERE",
+  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "PASTE_YOUR_PROJECT_ID_HERE",
+  storageBucket: "PASTE_YOUR_PROJECT_ID.firebasestorage.app",
+  messagingSenderId: "PASTE_YOUR_SENDER_ID_HERE",
+  appId: "PASTE_YOUR_APP_ID_HERE"
 };
