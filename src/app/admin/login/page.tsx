@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,46 +9,41 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Lock, LogIn } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/firebase';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const auth = useAuth();
 
-  useEffect(() => {
-    const auth = localStorage.getItem('gz_admin_auth');
-    if (auth === 'true') {
-      router.replace('/admin/dashboard');
-    }
-  }, [router]);
-
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
-    const isValidAdmin = (username === 'admin' && password === 'gaming2024');
-    const isValidManager = (username === 'manager' && password === 'gaming2024');
-
-    if (isValidAdmin || isValidManager) {
+    try {
+      // Use real Firebase Auth
+      await signInWithEmailAndPassword(auth, email, password);
+      
+      // We still use localStorage as a secondary flag for your existing AdminLayout check
       localStorage.setItem('gz_admin_auth', 'true');
-      localStorage.setItem('gz_admin_user', username);
       
       toast({
         title: "Welcome Back",
-        description: `Logged in as ${username}.`,
+        description: "Admin access granted.",
       });
       
-      setTimeout(() => {
-        router.push('/admin/dashboard');
-      }, 500);
-    } else {
+      router.push('/admin/dashboard');
+    } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid username or password.",
+        title: "Access Denied",
+        description: error.message || "Invalid email or password.",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -62,18 +57,19 @@ export default function AdminLogin() {
           </div>
           <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Admin Login</CardTitle>
           <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-            Owner and Staff Access Only
+            Staff Access Only
           </CardDescription>
         </CardHeader>
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="username" className="text-[10px] font-black uppercase tracking-widest">Username</Label>
+              <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest">Admin Email</Label>
               <Input 
-                id="username" 
-                placeholder="Enter username" 
-                value={username} 
-                onChange={(e) => setUsername(e.target.value)}
+                id="email" 
+                type="email"
+                placeholder="admin@khalexhub.com" 
+                value={email} 
+                onChange={(e) => setEmail(e.target.value)}
                 required 
                 className="bg-background border-primary/20 h-10 text-xs"
               />
@@ -97,7 +93,7 @@ export default function AdminLogin() {
               className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
               disabled={isLoading}
             >
-              {isLoading ? 'Checking...' : 'Login'}
+              {isLoading ? 'Verifying...' : 'Login'}
               {!isLoading && <LogIn className="ml-2 w-4 h-4" />}
             </Button>
             <Button variant="ghost" asChild className="text-[8px] uppercase font-black text-muted-foreground hover:text-primary">
