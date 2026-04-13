@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -7,7 +8,6 @@ import {
   setDoc, 
   deleteDoc, 
   query, 
-  orderBy, 
   serverTimestamp,
   limit,
   DocumentData
@@ -68,18 +68,6 @@ export interface Order {
   }[];
 }
 
-export interface Customer {
-  id: string;
-  name: string;
-  whatsapp: string;
-  email?: string;
-  totalSpent: number;
-  orderCount: number;
-  lastOrderDate: any;
-  joinedDate: string;
-  group: 'regular' | 'vip' | 'new';
-}
-
 export interface StoreSettings {
   storeName: string;
   whatsapp: string;
@@ -93,9 +81,12 @@ export interface StoreSettings {
 // Helper to remove undefined values from objects for Firestore compatibility
 function sanitizeData(obj: any) {
   const sanitized: any = {};
+  if (!obj || typeof obj !== 'object') return obj;
+  
   Object.entries(obj).forEach(([key, value]) => {
     if (value !== undefined) {
       if (typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Date)) {
+        // Deep sanitize for nested objects (like specs)
         sanitized[key] = sanitizeData(value);
       } else {
         sanitized[key] = value;
@@ -109,10 +100,10 @@ function sanitizeData(obj: any) {
 export function useStore() {
   const db = useFirestore();
 
-  // Queries - Real-time listeners
-  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(100)), [db]);
-  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100)), [db]);
-  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(100)), [db]);
+  // Simple queries to avoid index requirements and ensure cross-device visibility
+  const productsQuery = useMemo(() => query(collection(db, 'products'), limit(500)), [db]);
+  const ordersQuery = useMemo(() => query(collection(db, 'orders'), limit(200)), [db]);
+  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(200)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
   const { data: productsData, loading: productsLoading } = useCollection<Product>(productsQuery);
@@ -120,7 +111,16 @@ export function useStore() {
   const { data: customersData } = useCollection<Customer>(customersQuery);
   const { data: settingsData } = useDoc<StoreSettings>(settingsRef);
 
-  const products = productsData || [];
+  // Client-side sorting for products (newest first)
+  const products = useMemo(() => {
+    if (!productsData) return [];
+    return [...productsData].sort((a, b) => {
+      const timeA = a.createdAt?.seconds || 0;
+      const timeB = b.createdAt?.seconds || 0;
+      return timeB - timeA;
+    });
+  }, [productsData]);
+
   const orders = ordersData || [];
   const customers = customersData || [];
   
@@ -134,7 +134,7 @@ export function useStore() {
     taxRate: 0
   };
 
-  // Mutations
+  // Mutations - Following "No Await" rule for snappy UI and cache priority
   const addProduct = (p: Partial<Product>) => {
     const id = p.id || `p-${Date.now()}`;
     const ref = doc(db, 'products', id);
@@ -149,7 +149,8 @@ export function useStore() {
       trackInventory: true,
       stockAlert: p.stockAlert || 5,
       price: Number(p.price) || 0,
-      costPrice: Number(p.costPrice) || 0
+      costPrice: Number(p.costPrice) || 0,
+      specs: p.specs || {}
     };
 
     const finalData = sanitizeData(newProduct);
@@ -214,7 +215,7 @@ export function useStore() {
         status: 'pending', 
         timestamp: new Date().toISOString(), 
         by: 'System', 
-        note: 'Order received. We are checking it.' 
+        note: 'Order received. Checking availability.' 
       }]
     };
 
@@ -260,11 +261,11 @@ export function useStore() {
         status, 
         timestamp: new Date().toISOString(), 
         by: 'Admin', 
-        note: customNote || `Order status updated to ${status.toUpperCase()}` 
+        note: customNote || `Status changed to ${status.toUpperCase()}` 
       }] 
     };
 
-    setDoc(ref, updateData, { merge: true });
+    setDoc(ref, sanitizeData(updateData), { merge: true });
   };
 
   const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {

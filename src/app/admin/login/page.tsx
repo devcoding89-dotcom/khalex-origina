@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -31,22 +32,21 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Login logic for 'admin' / 'gaming2025'
+      // Direct credentials check as requested
       if (username.toLowerCase() === 'admin' && password === 'gaming2025') {
         
-        // Connect to Firebase silently for database access
+        // Ensure a Firebase connection is active for the database sync
         try {
           await signInAnonymously(auth);
         } catch (authErr) {
-          console.warn('Firebase Auth failed, continuing with local session:', authErr);
+          console.warn('Firebase connection failed, continuing with local session:', authErr);
         }
         
-        // Set local session flag
         localStorage.setItem('khalex_admin_session', 'active');
         
         toast({
-          title: "Access Granted",
-          description: "System linked. Redirecting to dashboard...",
+          title: "System Access Granted",
+          description: "Database linked. Opening dashboard...",
         });
         
         router.push('/admin/dashboard');
@@ -54,15 +54,14 @@ export default function AdminLoginPage() {
         toast({
           variant: "destructive",
           title: "Access Denied",
-          description: "Incorrect username or password.",
+          description: "Invalid credentials. Please check your username and password.",
         });
       }
     } catch (error: any) {
-      console.error('Login error:', error);
       toast({
         variant: "destructive",
-        title: "System Error",
-        description: "Failed to establish cloud link. Please check your internet.",
+        title: "Connection Error",
+        description: "Failed to link with the cloud server. Check your network.",
       });
     } finally {
       setIsLoading(false);
@@ -117,16 +116,16 @@ export default function AdminLoginPage() {
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Connecting...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
                 </span>
-              ) : "Login to Dashboard"}
+              ) : "Unlock Dashboard"}
             </Button>
           </form>
 
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3 items-center">
              <Lock className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Cloud Sync Enabled. Changes will reflect on all customer devices instantly.
+               Secure cloud sync is active. Your changes will reflect on all devices.
              </p>
           </div>
         </CardContent>
