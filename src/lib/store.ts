@@ -9,11 +9,12 @@ import {
   deleteDoc, 
   query, 
   orderBy, 
-  serverTimestamp
+  serverTimestamp,
+  Firestore
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
 
 // --- TYPES ---
 export type Category = 'phones' | 'laptops' | 'gadgets' | 'cod' | 'cp' | 'all';
@@ -107,7 +108,7 @@ export function useStore() {
   const customersQuery = useMemo(() => query(collection(db, 'customers'), orderBy('totalSpent', 'desc')), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
-  // Data
+  // Data Stream
   const { data: productsData } = useCollection<Product>(productsQuery);
   const { data: ordersData } = useCollection<Order>(ordersQuery);
   const { data: customersData } = useCollection<Customer>(customersQuery);
@@ -143,23 +144,36 @@ export function useStore() {
       trackInventory: true,
       stockAlert: p.stockAlert || 5
     };
+
     setDoc(ref, newProduct, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newProduct }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'create',
+        requestResourceData: newProduct
+      } satisfies SecurityRuleContext));
     });
   };
 
   const updateProduct = (p: Product) => {
     const ref = doc(db, 'products', p.id);
     const updateData = { ...p, updatedAt: serverTimestamp() };
+
     setDoc(ref, updateData, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'update',
+        requestResourceData: updateData
+      } satisfies SecurityRuleContext));
     });
   };
 
   const deleteProduct = (id: string) => {
     const ref = doc(db, 'products', id);
     deleteDoc(ref).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'delete'
+      } satisfies SecurityRuleContext));
     });
   };
 
@@ -186,9 +200,14 @@ export function useStore() {
     };
     
     setDoc(ref, newOrder).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newOrder }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'create',
+        requestResourceData: newOrder
+      } satisfies SecurityRuleContext));
     });
 
+    // Update Customer Profile
     const customerRef = doc(db, 'customers', orderData.whatsapp);
     const existingCustomer = customers.find(c => c.whatsapp === orderData.whatsapp);
     
@@ -205,7 +224,11 @@ export function useStore() {
     };
 
     setDoc(customerRef, customerData, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: customerRef.path, operation: 'update', requestResourceData: customerData }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: customerRef.path,
+        operation: 'update',
+        requestResourceData: customerData
+      } satisfies SecurityRuleContext));
     });
 
     return { ...newOrder, id };
@@ -227,20 +250,33 @@ export function useStore() {
     };
 
     setDoc(ref, updateData, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'update',
+        requestResourceData: updateData
+      } satisfies SecurityRuleContext));
     });
   };
 
   const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
     const ref = doc(db, 'orders', id);
-    setDoc(ref, { paymentStatus }, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { paymentStatus } }));
+    const updateData = { paymentStatus };
+    setDoc(ref, updateData, { merge: true }).catch(async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'update',
+        requestResourceData: updateData
+      } satisfies SecurityRuleContext));
     });
   };
 
   const updateSettings = (s: StoreSettings) => {
     setDoc(settingsRef, s, { merge: true }).catch(async (err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: settingsRef.path, operation: 'update', requestResourceData: s }));
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: settingsRef.path,
+        operation: 'update',
+        requestResourceData: s
+      } satisfies SecurityRuleContext));
     });
   };
 
