@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Lock, AlertCircle } from 'lucide-react';
+import { ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -33,25 +33,34 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Map 'khlex' to a proper email if user just types the callsign
+      // Map 'khlex' callsign to the email set in Firebase Console
       const email = username.toLowerCase() === 'khlex' 
         ? 'khlex@khalexhub.com' 
         : (username.includes('@') ? username : `${username.toLowerCase()}@khalexhub.com`);
       
-      // Real Firebase Auth login
       await signInWithEmailAndPassword(auth, email, password);
       
       toast({
         title: "Access Granted",
-        description: "Cloud session established. You are now live.",
+        description: "Cloud session established. Redirecting...",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
-      console.error(error);
+      console.error('Login error:', error.code, error.message);
+      let message = "Incorrect callsign or access key.";
+      
+      if (error.code === 'auth/user-not-found') {
+        message = "User not found. Please add 'khlex@khalexhub.com' to your Firebase Console Auth tab.";
+      } else if (error.code === 'auth/wrong-password') {
+        message = "Invalid password for this callsign.";
+      } else if (error.code === 'auth/network-request-failed') {
+        message = "Network error. Please check your internet connection.";
+      }
+
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: "Incorrect callsign or access key. Ensure user is added in Firebase Console Auth.",
+        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -80,6 +89,7 @@ export default function AdminLoginPage() {
               <Input 
                 type="text" 
                 required 
+                disabled={isLoading}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Username"
@@ -91,6 +101,7 @@ export default function AdminLoginPage() {
               <Input 
                 type="password" 
                 required 
+                disabled={isLoading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
@@ -100,16 +111,20 @@ export default function AdminLoginPage() {
             <Button 
               type="submit" 
               disabled={isLoading}
-              className="w-full h-14 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm hover:shadow-[0_0_20px_rgba(0,255,136,0.3)]"
+              className="w-full h-14 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all"
             >
-              {isLoading ? "Verifying..." : "Establish Uplink"}
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
+                </span>
+              ) : "Establish Uplink"}
             </Button>
           </form>
 
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3">
              <AlertCircle className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Sync Notice: Ensure you have added 'khlex@khalexhub.com' to your Firebase Console Auth tab to sync data to other devices.
+               Sync Notice: Use 'khlex' to log in. Ensure you have added 'khlex@khalexhub.com' to your Firebase Console Auth tab first.
              </p>
           </div>
         </CardContent>

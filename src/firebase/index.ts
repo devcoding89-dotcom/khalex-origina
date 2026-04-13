@@ -22,11 +22,11 @@ export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firest
   
   let db: Firestore;
   try {
+    // Force Long Polling to prevent "Could not reach backend" errors on restricted networks
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
     });
   } catch (e) {
-    // If initializeFirestore was already called, we just get the existing instance
     db = getFirestore(app);
   }
 
