@@ -2,13 +2,34 @@
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
 export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
-  const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  let app: FirebaseApp;
+  if (getApps().length === 0) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApp();
+  }
+  
   const auth = getAuth(app);
-  const db = getFirestore(app);
+  
+  /**
+   * We use initializeFirestore instead of getFirestore to pass settings.
+   * experimentalForceLongPolling helps fix "Could not reach Cloud Firestore backend"
+   * errors on some networks by using a more compatible protocol.
+   */
+  let db: Firestore;
+  try {
+    db = initializeFirestore(app, {
+      experimentalForceLongPolling: true,
+    });
+  } catch (e) {
+    // If initializeFirestore was already called, we just get the existing instance
+    db = getFirestore(app);
+  }
+
   return { app, auth, db };
 }
 
