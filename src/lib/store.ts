@@ -14,7 +14,6 @@ import {
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError, type SecurityRuleContext } from '@/firebase/errors';
-import { toast } from '@/hooks/use-toast';
 
 // --- TYPES ---
 export type Category = 'phones' | 'laptops' | 'gadgets' | 'cod' | 'cp' | 'all';
@@ -100,7 +99,7 @@ export function useStore() {
   const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(50)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
-  const { data: productsData, loading: productsLoading } = useCollection<Product>(productsQuery);
+  const { data: productsData, loading: productsLoading, error: productsError } = useCollection<Product>(productsQuery);
   const { data: ordersData } = useCollection<Order>(ordersQuery);
   const { data: customersData } = useCollection<Customer>(customersQuery);
   const { data: settingsData } = useDoc<StoreSettings>(settingsRef);
@@ -298,6 +297,7 @@ export function useStore() {
   return {
     products,
     productsLoading,
+    productsError,
     orders,
     customers,
     settings,

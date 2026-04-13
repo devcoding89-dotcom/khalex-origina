@@ -5,6 +5,11 @@ import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore, initializeFirestore } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
+/**
+ * Initializes Firebase with specific settings for robustness.
+ * experimentalForceLongPolling: true is enabled to bypass network restrictions 
+ * that often cause "Could not reach Cloud Firestore backend" errors.
+ */
 export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
   let app: FirebaseApp;
   if (getApps().length === 0) {
@@ -15,11 +20,6 @@ export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firest
   
   const auth = getAuth(app);
   
-  /**
-   * We use initializeFirestore instead of getFirestore to pass settings.
-   * experimentalForceLongPolling helps fix "Could not reach Cloud Firestore backend"
-   * errors on some networks by using a more compatible protocol.
-   */
   let db: Firestore;
   try {
     db = initializeFirestore(app, {

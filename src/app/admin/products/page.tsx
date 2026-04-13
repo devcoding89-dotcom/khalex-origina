@@ -11,14 +11,14 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon, Save, Upload } from 'lucide-react';
+import { Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon, Save, Upload, Loader2 } from 'lucide-react';
 import { generateProductDescription } from '@/ai/flows/generate-product-description-flow';
 import { useToast } from '@/hooks/use-toast';
 
 function ProductsManagementContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { products, addProduct, updateProduct, deleteProduct, settings } = useStore();
+  const { products, productsLoading, addProduct, updateProduct, deleteProduct, settings } = useStore();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   
@@ -83,7 +83,7 @@ function ProductsManagementContent() {
     
     toast({ 
       title: "Cloud Sync Initiated", 
-      description: `${fullProduct.name} saved. Note: Link Firebase keys to sync across devices.` 
+      description: `${fullProduct.name} saved. Operation will sync to all devices.` 
     });
     setEditingProduct(null);
     router.replace('/admin/products');
@@ -150,7 +150,12 @@ function ProductsManagementContent() {
         )}
       </div>
 
-      {editingProduct ? (
+      {productsLoading ? (
+        <div className="py-24 flex flex-col items-center justify-center space-y-4">
+          <Loader2 className="w-12 h-12 text-primary animate-spin" />
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Synchronizing Armory...</p>
+        </div>
+      ) : editingProduct ? (
         <Card className="bg-card border-primary/20 max-w-5xl mx-auto shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary animate-pulse" />
           <CardHeader className="flex flex-row justify-between items-center border-b border-primary/10">
