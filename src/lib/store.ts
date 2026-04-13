@@ -89,6 +89,14 @@ export interface StoreSettings {
   taxRate: number;
 }
 
+export interface AuditLog {
+  id: string;
+  action: string;
+  target: string;
+  admin: string;
+  timestamp: string;
+}
+
 // --- STORE HOOK ---
 export function useStore() {
   const db = useFirestore();
@@ -108,6 +116,8 @@ export function useStore() {
   const products = productsData || [];
   const orders = ordersData || [];
   const customers = customersData || [];
+  const auditLogs: AuditLog[] = []; // Initializing as empty for now to prevent crashes
+  
   const settings: StoreSettings = settingsData || {
     storeName: 'KHALEX hub',
     whatsapp: '09166905298',
@@ -244,6 +254,7 @@ export function useStore() {
     products,
     orders,
     customers,
+    auditLogs,
     settings,
     cart,
     addProduct,

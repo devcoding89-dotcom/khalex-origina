@@ -1,4 +1,3 @@
-
 "use client";
 
 import { AdminLayout } from '@/components/AdminLayout';
@@ -32,7 +31,7 @@ import {
 } from 'recharts';
 
 export default function Dashboard() {
-  const { products, orders, customers, auditLogs, settings } = useStore();
+  const { products, orders, customers, auditLogs = [], settings } = useStore();
 
   const totalRevenue = orders.filter(o => o.status !== 'cancelled').reduce((acc, o) => acc + o.total, 0);
   const pendingCount = orders.filter(o => o.status === 'pending').length;
@@ -179,7 +178,7 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="p-0">
               <div className="divide-y divide-primary/5">
-                {auditLogs.slice(0, 6).map((log) => (
+                {(auditLogs || []).slice(0, 6).map((log) => (
                   <div key={log.id} className="p-4 flex items-center justify-between hover:bg-primary/5 transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded bg-primary/10 flex items-center justify-center text-primary">
@@ -193,7 +192,7 @@ export default function Dashboard() {
                     <Badge variant="outline" className="text-[8px] opacity-0 group-hover:opacity-100 transition-opacity">INTEL</Badge>
                   </div>
                 ))}
-                {auditLogs.length === 0 && <div className="p-12 text-center text-xs text-muted-foreground italic uppercase">No recent transmissions</div>}
+                {(!auditLogs || auditLogs.length === 0) && <div className="p-12 text-center text-xs text-muted-foreground italic uppercase">No recent transmissions</div>}
               </div>
             </CardContent>
           </Card>
