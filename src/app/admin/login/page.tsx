@@ -36,8 +36,8 @@ export default function AdminLoginPage() {
       let message = "Invalid credentials.";
       if (error.code === 'auth/invalid-api-key') {
         message = "Firebase API Key is missing or invalid. Please check src/firebase/config.ts";
-      } else if (error.code === 'auth/user-not-found') {
-        message = "User not found. Please create an admin user in your Firebase Console.";
+      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+        message = "User not found or incorrect credentials. Create an admin user in your Firebase Console.";
       }
       
       toast({
@@ -102,11 +102,11 @@ export default function AdminLoginPage() {
             <Info className="w-4 h-4 text-primary shrink-0" />
             <div className="space-y-1">
               <p className="text-[9px] font-black uppercase text-primary">Setup Instructions</p>
-              <p className="text-[8px] text-muted-foreground uppercase leading-relaxed font-bold">
-                1. Go to Firebase Console > Authentication > Users<br/>
-                2. Click "Add User" and set your own email/password<br/>
-                3. Use those details here to log in
-              </p>
+              <div className="text-[8px] text-muted-foreground uppercase leading-relaxed font-bold">
+                <p>1. Go to Firebase Console &gt; Authentication &gt; Users</p>
+                <p>2. Click &quot;Add User&quot; and set your own email/password</p>
+                <p>3. Use those details here to log in</p>
+              </div>
             </div>
           </div>
 
