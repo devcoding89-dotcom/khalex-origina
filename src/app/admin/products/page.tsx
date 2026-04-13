@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useStore, Product, Category } from '@/lib/store';
 import { AdminLayout } from '@/components/AdminLayout';
@@ -11,7 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon, Save } from 'lucide-react';
+import { Plus, Trash2, Edit, Sparkles, X, PlusCircle, MinusCircle, ImageIcon, Save, Upload } from 'lucide-react';
 import { generateProductDescription } from '@/ai/flows/generate-product-description-flow';
 import { useToast } from '@/hooks/use-toast';
 
@@ -20,6 +20,7 @@ function ProductsManagementContent() {
   const searchParams = useSearchParams();
   const { products, addProduct, updateProduct, deleteProduct, settings } = useStore();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [editingProduct, setEditingProduct] = useState<Partial<Product> | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -81,11 +82,28 @@ function ProductsManagementContent() {
     }
     
     toast({ 
-      title: "Cloud Sync Complete", 
-      description: `${fullProduct.name} saved to secure database.` 
+      title: "Cloud Sync Initiated", 
+      description: `${fullProduct.name} saved. Note: Link Firebase keys to sync across devices.` 
     });
     setEditingProduct(null);
     router.replace('/admin/products');
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 1024 * 1024) { // 1MB limit for Base64 storage
+        toast({ title: "File too large", description: "Please upload an image smaller than 1MB.", variant: "destructive" });
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        if (editingProduct) {
+          setEditingProduct({ ...editingProduct, imageUrl: reader.result as string });
+        }
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const addSpecRow = () => setSpecRows([...specRows, { key: '', value: '' }]);
@@ -150,33 +168,40 @@ function ProductsManagementContent() {
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <Label className="uppercase font-black text-[10px] tracking-widest">Asset Visual</Label>
-                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-primary/20 bg-muted/20 flex items-center justify-center group">
+                    <div className="relative aspect-square rounded-xl overflow-hidden border-2 border-dashed border-primary/20 bg-muted/20 flex flex-col items-center justify-center group">
                       {editingProduct.imageUrl ? (
                         <img src={editingProduct.imageUrl} alt="Preview" className="w-full h-full object-cover transition-opacity group-hover:opacity-40" />
                       ) : (
                         <ImageIcon className="w-12 h-12 text-muted-foreground" />
                       )}
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
-                        <p className="text-[10px] font-black uppercase text-white">Cloud Image Preview</p>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 gap-4">
+                        <Button 
+                          type="button" 
+                          variant="secondary" 
+                          size="sm" 
+                          className="font-black uppercase text-[10px]"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Upload className="w-3 h-3 mr-2" /> Upload Image
+                        </Button>
+                        <p className="text-[8px] font-black uppercase text-white/70">Max size: 1MB</p>
                       </div>
+                      <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        onChange={handleFileChange} 
+                        accept="image/*" 
+                        className="hidden" 
+                      />
                     </div>
                   </div>
                   
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="uppercase font-black text-[8px] tracking-widest text-muted-foreground">Image URL</Label>
+                      <Label className="uppercase font-black text-[8px] tracking-widest text-muted-foreground">Image URL (Manual Override)</Label>
                       <Input 
                         value={editingProduct.imageUrl} 
                         onChange={e => setEditingProduct({...editingProduct, imageUrl: e.target.value})}
-                        placeholder="https://..."
-                        className="bg-background border-primary/10 text-xs h-10"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="uppercase font-black text-[8px] tracking-widest text-muted-foreground">Video URL (Optional)</Label>
-                      <Input 
-                        value={editingProduct.videoUrl || ''} 
-                        onChange={e => setEditingProduct({...editingProduct, videoUrl: e.target.value})}
                         placeholder="https://..."
                         className="bg-background border-primary/10 text-xs h-10"
                       />
