@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -108,7 +107,7 @@ export default function TrackOrderPage() {
                   </div>
                 </div>
                 
-                <CardContent className="p-8 space-y-8">
+                <CardContent className="p-8 space-y-10">
                   <div className="space-y-4">
                     <div className="text-[10px] font-black uppercase tracking-widest text-primary">Deployment Progress</div>
                     <div className="relative h-2 bg-primary/10 rounded-full overflow-hidden">
@@ -119,30 +118,46 @@ export default function TrackOrderPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div className="space-y-4">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-primary">Deployed Assets</div>
-                      <div className="space-y-2">
-                        {foundOrder.items.map((item, i) => (
-                          <div key={i} className="flex justify-between items-center p-3 bg-white/5 rounded-lg border border-white/5">
-                            <span className="text-xs font-bold uppercase">{item.name}</span>
-                            <span className="text-xs text-primary font-black">x{item.quantity}</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+                    <div className="space-y-6">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-primary border-b border-primary/10 pb-2">Intel Log</div>
+                      <div className="space-y-8 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-primary/20">
+                        {[...(foundOrder.timeline || [])].reverse().map((event, i) => (
+                          <div key={i} className="relative pl-8">
+                            <div className={`absolute left-0 top-1 w-6 h-6 rounded-full flex items-center justify-center border-2 border-background z-10 ${i === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                              <div className="w-2 h-2 rounded-full bg-current" />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between items-center">
+                                <div className="text-[11px] font-black uppercase tracking-tighter text-foreground">{event.status}</div>
+                                <div className="text-[8px] text-muted-foreground uppercase">{new Date(event.timestamp).toLocaleString()}</div>
+                              </div>
+                              <div className="text-[12px] text-muted-foreground italic bg-primary/5 p-3 rounded-md border-l-2 border-primary/40 leading-relaxed">
+                                "{event.note}"
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="text-[10px] font-black uppercase tracking-widest text-primary">Intel Log</div>
-                      <div className="space-y-4 border-l-2 border-primary/20 ml-2 pl-4">
-                        {foundOrder.timeline.map((event, i) => (
-                          <div key={i} className="relative">
-                            <div className="absolute -left-[21px] top-1 w-3 h-3 rounded-full bg-primary border-2 border-background" />
-                            <div className="text-[10px] font-black uppercase">{event.status}</div>
-                            <div className="text-[8px] text-muted-foreground uppercase">{new Date(event.timestamp).toLocaleString()}</div>
-                            {event.note && <div className="text-[10px] text-muted-foreground italic mt-1 leading-tight">{event.note}</div>}
+                    <div className="space-y-6">
+                      <div className="text-[10px] font-black uppercase tracking-widest text-primary border-b border-primary/10 pb-2">Manifest Assets</div>
+                      <div className="space-y-2">
+                        {foundOrder.items.map((item, i) => (
+                          <div key={i} className="flex justify-between items-center p-4 bg-white/5 rounded-lg border border-white/5 group hover:border-primary/20 transition-colors">
+                            <span className="text-xs font-bold uppercase">{item.name}</span>
+                            <span className="text-xs text-primary font-black">x{item.quantity}</span>
                           </div>
                         ))}
+                      </div>
+                      
+                      <div className="p-4 rounded-xl bg-primary/5 border border-primary/10 space-y-2">
+                        <div className="text-[10px] font-black uppercase text-primary">Summary</div>
+                        <div className="flex justify-between items-end">
+                          <span className="text-[9px] text-muted-foreground uppercase">Settlement Total</span>
+                          <span className="text-xl font-black text-primary">{settings.currencySymbol}{foundOrder.total.toLocaleString()}</span>
+                        </div>
                       </div>
                     </div>
                   </div>

@@ -59,7 +59,12 @@ export interface Order {
   priority: 'low' | 'normal' | 'high' | 'urgent';
   items: any[];
   createdAt: any;
-  timeline: any[];
+  timeline: {
+    status: string;
+    timestamp: string;
+    by: string;
+    note: string;
+  }[];
 }
 
 export interface Customer {
@@ -166,7 +171,7 @@ export function useStore() {
         status: 'pending', 
         timestamp: new Date().toISOString(), 
         by: 'System', 
-        note: 'Mission received and logged in cloud database.' 
+        note: 'Mission initiated. Awaiting command verification.' 
       }]
     };
     
@@ -191,7 +196,7 @@ export function useStore() {
     return { ...newOrder, id };
   };
 
-  const updateOrderStatus = (id: string, status: OrderStatus) => {
+  const updateOrderStatus = (id: string, status: OrderStatus, customNote?: string) => {
     const ref = doc(db, 'orders', id);
     const existingOrder = orders.find(o => o.id === id);
     const currentTimeline = existingOrder?.timeline || [];
@@ -201,8 +206,8 @@ export function useStore() {
       timeline: [...currentTimeline, { 
         status, 
         timestamp: new Date().toISOString(), 
-        by: 'Admin', 
-        note: `Strategic status updated to ${status}` 
+        by: 'Commander', 
+        note: customNote || `Strategic status updated to ${status.toUpperCase()}` 
       }] 
     }, { merge: true }).catch(err => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update' }));

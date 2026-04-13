@@ -1,4 +1,3 @@
-
 "use client";
 
 import { use, useState, useEffect } from 'react';
@@ -7,6 +6,8 @@ import { useStore, Order, OrderStatus, PaymentStatus } from '@/lib/store';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { 
   ArrowLeft, 
   MessageSquare, 
@@ -19,7 +20,8 @@ import {
   User,
   Package,
   ExternalLink,
-  ShieldCheck
+  ShieldCheck,
+  Send
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +33,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   const { toast } = useToast();
   const { orders, updateOrderStatus, updateOrderPaymentStatus, settings } = useStore();
   const [order, setOrder] = useState<Order | null>(null);
+  const [adminNote, setAdminNote] = useState('');
 
   useEffect(() => {
     const found = orders.find(o => o.id === id);
@@ -40,8 +43,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   if (!order) return <div className="p-8 text-center text-primary font-headline animate-pulse">DECRYPTING DATA...</div>;
 
   const handleStatusUpdate = (newStatus: OrderStatus) => {
-    updateOrderStatus(order.id, newStatus);
+    updateOrderStatus(order.id, newStatus, adminNote);
     toast({ title: "Status Updated", description: `Mission marked as ${newStatus}` });
+    setAdminNote('');
   };
 
   const handlePaymentUpdate = (newStatus: PaymentStatus) => {
@@ -89,7 +93,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                   <div className="space-y-1">
                     <div className="text-[8px] text-muted-foreground uppercase font-black">Date Logged</div>
-                    <div className="text-xs">{new Date(order.createdAt).toLocaleString()}</div>
+                    <div className="text-xs">{new Date(order.createdAt?.seconds * 1000 || Date.now()).toLocaleString()}</div>
                   </div>
                   <div className="space-y-1">
                     <div className="text-[8px] text-muted-foreground uppercase font-black">Priority</div>
@@ -136,10 +140,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {order.timeline.map((event, idx) => (
+                {[...(order.timeline || [])].reverse().map((event, idx) => (
                   <div key={idx} className="flex gap-4 relative">
                     {idx !== order.timeline.length - 1 && <div className="absolute left-2.5 top-6 bottom-0 w-px bg-primary/20" />}
-                    <div className={`w-5 h-5 rounded-full z-10 flex items-center justify-center ${idx === order.timeline.length - 1 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
+                    <div className={`w-5 h-5 rounded-full z-10 flex items-center justify-center ${idx === 0 ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'}`}>
                       <div className="w-2 h-2 rounded-full bg-current" />
                     </div>
                     <div className="flex-1 pb-4">
@@ -147,8 +151,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                         <div className="text-[10px] font-black uppercase">{event.status}</div>
                         <div className="text-[8px] text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</div>
                       </div>
-                      <div className="text-[10px] text-muted-foreground italic mt-1">
-                        {event.note || 'Status updated by system'} • {event.by}
+                      <div className="text-[10px] text-muted-foreground italic mt-1 p-2 bg-primary/5 rounded border-l-2 border-primary/30">
+                        "{event.note || 'Status updated'}" <span className="text-[8px] uppercase font-black not-italic ml-2 opacity-50">— {event.by}</span>
                       </div>
                     </div>
                   </div>
@@ -158,6 +162,43 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </div>
 
           <div className="space-y-8">
+            <Card className="bg-card border-primary/20 shadow-xl overflow-hidden">
+              <CardHeader className="bg-primary/5 border-b border-primary/10">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <Send className="w-3 h-3 text-primary" /> Command Protocol
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-6">
+                <div className="space-y-2">
+                  <Label className="uppercase font-black text-[9px] tracking-widest text-muted-foreground">Tactical Update Note (Customer sees this)</Label>
+                  <textarea 
+                    value={adminNote}
+                    onChange={(e) => setAdminNote(e.target.value)}
+                    placeholder="Enter update for customer tracking..."
+                    className="w-full bg-background border border-primary/20 rounded-md p-3 text-xs focus:border-primary outline-none min-h-[100px] resize-none"
+                  />
+                </div>
+
+                <div className="space-y-4">
+                  <div className="text-[8px] text-muted-foreground uppercase font-black">Execute Status Transition</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="outline" className="text-[8px] h-8" onClick={() => handleStatusUpdate('processing')}>PROCESSING</Button>
+                    <Button size="sm" variant="outline" className="text-[8px] h-8" onClick={() => handleStatusUpdate('ready')}>READY</Button>
+                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-primary border-primary/20" onClick={() => handleStatusUpdate('completed')}>COMPLETE</Button>
+                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-destructive border-destructive/20" onClick={() => handleStatusUpdate('cancelled')}>CANCEL</Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-6 border-t border-primary/5">
+                  <div className="text-[8px] text-muted-foreground uppercase font-black">Financial Extraction</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-secondary border-secondary/20" onClick={() => handlePaymentUpdate('paid')}>MARK PAID</Button>
+                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-destructive border-destructive/20" onClick={() => handlePaymentUpdate('failed')}>FAILED</Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card className="bg-card border-primary/10 overflow-hidden">
               <CardHeader className="bg-muted/30 border-b">
                 <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
@@ -184,35 +225,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   </div>
                 )}
                 <Button asChild variant="outline" className="w-full border-primary/20 h-10 text-[10px] uppercase font-black">
-                  <Link href={`/admin/customers/${order.customerId}`}>
+                  <Link href={`/admin/customers/${order.whatsapp}`}>
                     View Personnel Profile <ExternalLink className="w-3 h-3 ml-2" />
                   </Link>
                 </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-card border-primary/20">
-              <CardHeader>
-                <CardTitle className="text-[10px] font-black uppercase tracking-widest">Command Protocol</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="text-[8px] text-muted-foreground uppercase font-black">Update Mission Status</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="outline" className="text-[8px] h-8" onClick={() => handleStatusUpdate('processing')}>PROCESSING</Button>
-                    <Button size="sm" variant="outline" className="text-[8px] h-8" onClick={() => handleStatusUpdate('ready')}>READY</Button>
-                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-primary border-primary/20" onClick={() => handleStatusUpdate('completed')}>COMPLETE</Button>
-                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-destructive border-destructive/20" onClick={() => handleStatusUpdate('cancelled')}>CANCEL</Button>
-                  </div>
-                </div>
-
-                <div className="space-y-2 pt-4 border-t border-primary/5">
-                  <div className="text-[8px] text-muted-foreground uppercase font-black">Verify Payment</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-secondary border-secondary/20" onClick={() => handlePaymentUpdate('paid')}>MARK PAID</Button>
-                    <Button size="sm" variant="outline" className="text-[8px] h-8 text-destructive border-destructive/20" onClick={() => handlePaymentUpdate('failed')}>FAILED</Button>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
