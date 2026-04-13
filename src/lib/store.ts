@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -93,9 +92,17 @@ export interface StoreSettings {
 
 // Helper to remove undefined values from objects for Firestore compatibility
 function sanitizeData(obj: any) {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([_, v]) => v !== undefined)
-  );
+  const sanitized: any = {};
+  Object.entries(obj).forEach(([key, value]) => {
+    if (value !== undefined) {
+      if (typeof value === 'object' && value !== null && !Array.isArray(value) && !(value instanceof Date)) {
+        sanitized[key] = sanitizeData(value);
+      } else {
+        sanitized[key] = value;
+      }
+    }
+  });
+  return sanitized;
 }
 
 // --- STORE HOOK ---
@@ -269,7 +276,7 @@ export function useStore() {
     setDoc(settingsRef, sanitizeData(s), { merge: true });
   };
 
-  // Local Storage Cart logic (stays on device)
+  // Cart logic
   const addToCart = (p: Product, qty: number = 1) => {
     if (typeof window === 'undefined') return;
     const savedCart = JSON.parse(localStorage.getItem('khalex_cart') || '[]');

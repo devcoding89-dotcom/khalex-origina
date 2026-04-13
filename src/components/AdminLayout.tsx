@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { signOut } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { 
   LayoutDashboard, 
@@ -42,8 +42,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
-    // Use local session check for speed and offline reliability
-    const session = localStorage.getItem('khalex_admin_session');
+    // Session check
+    const session = typeof window !== 'undefined' ? localStorage.getItem('khalex_admin_session') : null;
     
     if (session !== 'active') {
       router.replace('/admin/login');
@@ -60,7 +60,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     window.addEventListener('offline', handleOffline);
     
     return () => {
-      clearInterval(timer);
+      if (timer) clearInterval(timer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
@@ -73,6 +73,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       router.push('/admin/login');
     } catch (error) {
       console.error('Logout failed:', error);
+      // Fallback for offline logout
+      localStorage.removeItem('khalex_admin_session');
+      router.push('/admin/login');
     }
   };
 

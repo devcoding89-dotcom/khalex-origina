@@ -1,4 +1,3 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -27,7 +26,7 @@ export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firest
     // This is critical for cross-device visibility on mobile data/WiFi.
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
-      useFetchStreams: false // Additional stability for long polling
+      useFetchStreams: false 
     });
   } catch (e) {
     db = getFirestore(app);

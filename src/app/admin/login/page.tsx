@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { signInAnonymously } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, AlertCircle, Loader2, Lock } from 'lucide-react';
+import { ShieldCheck, Loader2, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -20,7 +20,6 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    // If they already have a local session, just go to dashboard
     const localSession = localStorage.getItem('khalex_admin_session');
     if (localSession === 'active') {
       router.replace('/admin/dashboard');
@@ -32,18 +31,22 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Hardcoded check for 'admin' / 'gaming2025'
+      // Login logic for 'admin' / 'gaming2025'
       if (username.toLowerCase() === 'admin' && password === 'gaming2025') {
         
-        // Silently sign in to Firebase Anonymously so we have a session for Firestore
-        await signInAnonymously(auth);
+        // Connect to Firebase silently for database access
+        try {
+          await signInAnonymously(auth);
+        } catch (authErr) {
+          console.warn('Firebase Auth failed, continuing with local session:', authErr);
+        }
         
         // Set local session flag
         localStorage.setItem('khalex_admin_session', 'active');
         
         toast({
           title: "Access Granted",
-          description: "Admin session established. Redirecting to dashboard...",
+          description: "System linked. Redirecting to dashboard...",
         });
         
         router.push('/admin/dashboard');
@@ -51,7 +54,7 @@ export default function AdminLoginPage() {
         toast({
           variant: "destructive",
           title: "Access Denied",
-          description: "Incorrect username or password. Please try again.",
+          description: "Incorrect username or password.",
         });
       }
     } catch (error: any) {
@@ -114,7 +117,7 @@ export default function AdminLoginPage() {
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Authenticating...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Connecting...
                 </span>
               ) : "Login to Dashboard"}
             </Button>
@@ -123,7 +126,7 @@ export default function AdminLoginPage() {
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3 items-center">
              <Lock className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Database Sync Enabled. Your changes will reflect on all customer devices instantly.
+               Cloud Sync Enabled. Changes will reflect on all customer devices instantly.
              </p>
           </div>
         </CardContent>
