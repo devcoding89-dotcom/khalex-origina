@@ -47,7 +47,7 @@ export default function CustomerRegister() {
       toast({
         variant: "destructive",
         title: "Password too short",
-        description: "Password should be at least 6 characters.",
+        description: "Password must be at least 6 characters.",
       });
       return;
     }
@@ -62,20 +62,18 @@ export default function CustomerRegister() {
       }
       
       toast({
-        title: "Account Created",
-        description: "Welcome! You can now start shopping.",
+        title: "Welcome to the Shop",
+        description: "Your account is ready. Happy shopping!",
       });
       router.push('/');
     } catch (error: any) {
       console.error(error);
       let message = "Could not create account. Please try again.";
       
-      if (error.code === 'auth/invalid-api-key') {
-        message = "Firebase API Key is invalid. Go to src/firebase/config.ts and paste your real keys from the Firebase Console.";
+      if (error.code === 'auth/invalid-api-key' || error.message.includes('API key')) {
+        message = "Configuration Missing: You must paste your real keys from the Firebase Console into src/firebase/config.ts.";
       } else if (error.code === 'auth/email-already-in-use') {
-        message = "This email is already registered.";
-      } else if (error.message) {
-        message = error.message;
+        message = "This email is already registered. Try logging in.";
       }
 
       toast({
@@ -101,9 +99,9 @@ export default function CustomerRegister() {
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <UserPlus className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Sign Up</CardTitle>
+            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter text-primary">Join the Hub</CardTitle>
             <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-              Create an account to join the shop
+              Create your account to start shopping
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleRegister}>
@@ -133,7 +131,7 @@ export default function CustomerRegister() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest">Password</Label>
+                <Label htmlFor="password" + className="text-[10px] font-black uppercase tracking-widest">Password</Label>
                 <Input 
                   id="password" 
                   type="password" 
@@ -145,7 +143,7 @@ export default function CustomerRegister() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-widest">Confirm Password</Label>
+                <Label htmlFor="confirmPassword" + className="text-[10px] font-black uppercase tracking-widest">Confirm Password</Label>
                 <Input 
                   id="confirmPassword" 
                   type="password" 
@@ -160,7 +158,7 @@ export default function CustomerRegister() {
               <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex gap-2 items-center">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <p className="text-[8px] text-muted-foreground uppercase font-bold leading-tight">
-                  Your data is protected by secure encryption.
+                  Your account will be safe and encrypted.
                 </p>
               </div>
             </CardContent>
@@ -170,7 +168,7 @@ export default function CustomerRegister() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating Account...' : 'Sign Up'}
+                {isLoading ? 'Creating Account...' : 'Create Account'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <div className="flex justify-center w-full mt-2">
@@ -178,7 +176,7 @@ export default function CustomerRegister() {
                   href="/login"
                   className="text-[10px] uppercase font-black text-primary hover:underline"
                 >
-                  Already have an account? Login
+                  Already have an account? Login here
                 </Link>
               </div>
             </CardFooter>
