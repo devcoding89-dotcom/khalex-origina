@@ -45,7 +45,7 @@ export default function CustomerLogin() {
       let message = "Please check your email and password.";
       
       if (error.code === 'auth/invalid-api-key') {
-        message = "CRITICAL: Firebase API Key is invalid. Go to src/firebase/config.ts and paste your real keys from the Firebase Console.";
+        message = "CRITICAL: Firebase API Key is missing. Go to src/firebase/config.ts and paste your real keys from the Firebase Console.";
       } else if (error.code === 'auth/user-not-found') {
         message = "No account found with this email.";
       } else if (error.code === 'auth/wrong-password') {
