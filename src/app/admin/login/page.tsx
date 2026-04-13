@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Gamepad2, Lock } from 'lucide-react';
+import { ShieldCheck, Lock, Info } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -33,10 +33,17 @@ export default function AdminLoginPage() {
       router.push('/admin/dashboard');
     } catch (error: any) {
       console.error(error);
+      let message = "Invalid credentials.";
+      if (error.code === 'auth/invalid-api-key') {
+        message = "Firebase API Key is missing or invalid. Please check src/firebase/config.ts";
+      } else if (error.code === 'auth/user-not-found') {
+        message = "User not found. Please create an admin user in your Firebase Console.";
+      }
+      
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: error.message || "Invalid credentials.",
+        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -44,7 +51,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
       <Card className="w-full max-w-md bg-card border-primary/20 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-1 bg-primary animate-pulse" />
         <CardHeader className="space-y-2 text-center pt-8">
@@ -91,6 +98,18 @@ export default function AdminLoginPage() {
             </Button>
           </form>
           
+          <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10 flex gap-3">
+            <Info className="w-4 h-4 text-primary shrink-0" />
+            <div className="space-y-1">
+              <p className="text-[9px] font-black uppercase text-primary">Setup Instructions</p>
+              <p className="text-[8px] text-muted-foreground uppercase leading-relaxed font-bold">
+                1. Go to Firebase Console > Authentication > Users<br/>
+                2. Click "Add User" and set your own email/password<br/>
+                3. Use those details here to log in
+              </p>
+            </div>
+          </div>
+
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <div className="flex items-center justify-center gap-2 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
               <Lock className="w-3 h-3" /> Encrypted Connection Active
@@ -99,7 +118,7 @@ export default function AdminLoginPage() {
         </CardContent>
       </Card>
       
-      <div className="fixed bottom-8 text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
+      <div className="mt-8 text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
         KHALEX Hub • System v2.0
       </div>
     </div>
