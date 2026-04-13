@@ -10,7 +10,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 export function Navigation() {
-  const { cart, settings, products } = useStore();
+  const { cart, settings } = useStore();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -42,10 +42,10 @@ export function Navigation() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-white/10 bg-background/90 backdrop-blur-xl">
       <div className="container mx-auto px-4 h-20 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2 group shrink-0">
+        <Link href="/" className="flex items-center gap-2 group shrink-0 min-w-fit">
           <Gamepad2 className="w-8 h-8 sm:w-10 sm:h-10 text-primary group-hover:rotate-12 transition-transform drop-shadow-[0_0_12px_rgba(0,255,136,0.5)]" />
-          <span className="text-xl sm:text-2xl font-headline font-black tracking-tighter italic block">
-            {firstName}<span className="text-primary neon-text">{otherNames}</span>
+          <span className="text-xl sm:text-2xl font-headline font-black tracking-tighter italic whitespace-nowrap">
+            {firstName} <span className="text-primary neon-text">{otherNames}</span>
           </span>
         </Link>
 

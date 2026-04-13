@@ -21,6 +21,10 @@ export default function Home() {
     { label: 'CP Top-up', value: 'cp', icon: '💎' },
   ];
 
+  const storeNameParts = settings.storeName.split(' ');
+  const firstName = storeNameParts[0] || 'KHALEX';
+  const otherNames = storeNameParts.slice(1).join(' ') || 'hub';
+
   return (
     <div className="flex flex-col min-h-screen">
       <Navigation />
@@ -191,8 +195,8 @@ export default function Home() {
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2 justify-center md:justify-start">
               <Gamepad2 className="w-8 h-8 text-primary" />
-              <span className="text-2xl font-headline font-black tracking-tighter uppercase">
-                {settings.storeName.split(' ')[0]}<span className="text-primary">{settings.storeName.split(' ').slice(1).join(' ')}</span>
+              <span className="text-2xl font-headline font-black tracking-tighter italic uppercase">
+                {firstName} <span className="text-primary neon-text">{otherNames}</span>
               </span>
             </Link>
             <p className="text-sm text-muted-foreground font-medium uppercase tracking-widest">
