@@ -1,3 +1,4 @@
+
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
@@ -8,7 +9,7 @@ import { firebaseConfig } from './config';
 /**
  * Initializes Firebase with specific settings for robustness.
  * experimentalForceLongPolling: true is enabled to bypass network restrictions 
- * that often cause "Could not reach Cloud Firestore backend" errors.
+ * that often cause "Could not reach Cloud Firestore backend" errors on many mobile networks.
  */
 export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
   let app: FirebaseApp;
@@ -23,8 +24,10 @@ export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firest
   let db: Firestore;
   try {
     // Force Long Polling to prevent "Could not reach backend" errors on restricted networks
+    // This is critical for cross-device visibility on mobile data/WiFi.
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
+      useFetchStreams: false // Additional stability for long polling
     });
   } catch (e) {
     db = getFirestore(app);

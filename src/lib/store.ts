@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -9,7 +10,8 @@ import {
   query, 
   orderBy, 
   serverTimestamp,
-  limit
+  limit,
+  DocumentData
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -89,17 +91,24 @@ export interface StoreSettings {
   taxRate: number;
 }
 
+// Helper to remove undefined values from objects for Firestore compatibility
+function sanitizeData(obj: any) {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, v]) => v !== undefined)
+  );
+}
+
 // --- STORE HOOK ---
 export function useStore() {
   const db = useFirestore();
 
   // Queries - Real-time listeners
-  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(50)), [db]);
-  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(50)), [db]);
-  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(50)), [db]);
+  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(100)), [db]);
+  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100)), [db]);
+  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(100)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
-  const { data: productsData, loading: productsLoading, error: productsError } = useCollection<Product>(productsQuery);
+  const { data: productsData, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { data: ordersData } = useCollection<Order>(ordersQuery);
   const { data: customersData } = useCollection<Customer>(customersQuery);
   const { data: settingsData } = useDoc<StoreSettings>(settingsRef);
@@ -118,7 +127,7 @@ export function useStore() {
     taxRate: 0
   };
 
-  // Mutations - No await for instant UI feedback
+  // Mutations
   const addProduct = (p: Partial<Product>) => {
     const id = p.id || `p-${Date.now()}`;
     const ref = doc(db, 'products', id);
@@ -129,19 +138,21 @@ export function useStore() {
       salesCount: p.salesCount || 0,
       views: p.views || 0,
       status: p.status || 'active',
-      isFeatured: p.isFeatured || false,
+      isFeatured: !!p.isFeatured,
       trackInventory: true,
       stockAlert: p.stockAlert || 5,
       price: Number(p.price) || 0,
       costPrice: Number(p.costPrice) || 0
     };
 
-    setDoc(ref, newProduct, { merge: true })
+    const finalData = sanitizeData(newProduct);
+
+    setDoc(ref, finalData, { merge: true })
       .catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
           operation: 'create',
-          requestResourceData: newProduct
+          requestResourceData: finalData
         } satisfies SecurityRuleContext));
       });
   };
@@ -155,12 +166,14 @@ export function useStore() {
       costPrice: Number(p.costPrice)
     };
 
-    setDoc(ref, updateData, { merge: true })
+    const finalData = sanitizeData(updateData);
+
+    setDoc(ref, finalData, { merge: true })
       .catch((err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
           operation: 'update',
-          requestResourceData: updateData
+          requestResourceData: finalData
         } satisfies SecurityRuleContext));
       });
   };
@@ -197,15 +210,18 @@ export function useStore() {
         note: 'Order received. We are checking it.' 
       }]
     };
+
+    const finalOrder = sanitizeData(newOrder);
     
-    setDoc(ref, newOrder).catch((err) => {
+    setDoc(ref, finalOrder).catch((err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({
         path: ref.path,
         operation: 'create',
-        requestResourceData: newOrder
+        requestResourceData: finalOrder
       } satisfies SecurityRuleContext));
     });
 
+    // Update or Create Customer
     const customerRef = doc(db, 'customers', orderData.whatsapp);
     const existingCustomer = customers.find(c => c.whatsapp === orderData.whatsapp);
     
@@ -218,16 +234,10 @@ export function useStore() {
       orderCount: (existingCustomer?.orderCount || 0) + 1,
       lastOrderDate: serverTimestamp(),
       joinedDate: existingCustomer?.joinedDate || new Date().toISOString(),
-      group: (existingCustomer?.group as any) || 'regular'
+      group: existingCustomer?.group || 'regular'
     };
 
-    setDoc(customerRef, customerData, { merge: true }).catch((err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: customerRef.path,
-        operation: 'update',
-        requestResourceData: customerData
-      } satisfies SecurityRuleContext));
-    });
+    setDoc(customerRef, sanitizeData(customerData), { merge: true });
 
     return { ...newOrder, id };
   };
@@ -247,40 +257,22 @@ export function useStore() {
       }] 
     };
 
-    setDoc(ref, updateData, { merge: true }).catch((err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: ref.path,
-        operation: 'update',
-        requestResourceData: updateData
-      } satisfies SecurityRuleContext));
-    });
+    setDoc(ref, updateData, { merge: true });
   };
 
   const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
     const ref = doc(db, 'orders', id);
-    const updateData = { paymentStatus };
-    setDoc(ref, updateData, { merge: true }).catch((err) => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({
-        path: ref.path,
-        operation: 'update',
-        requestResourceData: updateData
-      } satisfies SecurityRuleContext));
-    });
+    setDoc(ref, { paymentStatus }, { merge: true });
   };
 
   const updateSettings = (s: StoreSettings) => {
-    setDoc(settingsRef, s, { merge: true })
-      .catch((err) => {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-          path: settingsRef.path,
-          operation: 'update',
-          requestResourceData: s
-        } satisfies SecurityRuleContext));
-      });
+    setDoc(settingsRef, sanitizeData(s), { merge: true });
   };
 
+  // Local Storage Cart logic (stays on device)
   const addToCart = (p: Product, qty: number = 1) => {
-    const savedCart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('gz_cart') || '[]') : [];
+    if (typeof window === 'undefined') return;
+    const savedCart = JSON.parse(localStorage.getItem('khalex_cart') || '[]');
     const existing = savedCart.find((item: any) => item.id === p.id);
     let newCart;
     if (existing) {
@@ -288,16 +280,15 @@ export function useStore() {
     } else {
       newCart = [...savedCart, { ...p, quantity: qty }];
     }
-    localStorage.setItem('gz_cart', JSON.stringify(newCart));
+    localStorage.setItem('khalex_cart', JSON.stringify(newCart));
     window.dispatchEvent(new Event('storage'));
   };
 
-  const cart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('gz_cart') || '[]') : [];
+  const cart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('khalex_cart') || '[]') : [];
 
   return {
     products,
     productsLoading,
-    productsError,
     orders,
     customers,
     settings,
@@ -312,17 +303,17 @@ export function useStore() {
     addToCart,
     removeFromCart: (id: string) => {
        const newCart = cart.filter((item: any) => item.id !== id);
-       localStorage.setItem('gz_cart', JSON.stringify(newCart));
+       localStorage.setItem('khalex_cart', JSON.stringify(newCart));
        window.dispatchEvent(new Event('storage'));
     },
     updateQuantity: (id: string, qty: number) => {
        if (qty < 1) return;
        const newCart = cart.map((item: any) => item.id === id ? { ...item, quantity: qty } : item);
-       localStorage.setItem('gz_cart', JSON.stringify(newCart));
+       localStorage.setItem('khalex_cart', JSON.stringify(newCart));
        window.dispatchEvent(new Event('storage'));
     },
     clearCart: () => {
-      localStorage.setItem('gz_cart', '[]');
+      localStorage.setItem('khalex_cart', '[]');
       window.dispatchEvent(new Event('storage'));
     }
   };
