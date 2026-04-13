@@ -101,7 +101,7 @@ export default function CustomerRegister() {
             </div>
             <CardTitle className="text-2xl font-black uppercase italic tracking-tighter text-primary">Create Account</CardTitle>
             <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-              Fill in your details to get started
+              Enter your details to join
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleRegister}>
@@ -111,7 +111,7 @@ export default function CustomerRegister() {
                 <Input 
                   id="name" 
                   type="text"
-                  placeholder="Enter your name" 
+                  placeholder="Your Name" 
                   value={name} 
                   onChange={(e) => setName(e.target.value)}
                   required 
@@ -123,7 +123,7 @@ export default function CustomerRegister() {
                 <Input 
                   id="email" 
                   type="email"
-                  placeholder="name@example.com" 
+                  placeholder="name@email.com" 
                   value={email} 
                   onChange={(e) => setEmail(e.target.value)}
                   required 
@@ -158,7 +158,7 @@ export default function CustomerRegister() {
               <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex gap-2 items-center">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <p className="text-[8px] text-muted-foreground uppercase font-bold leading-tight">
-                  Your information is safe and secure.
+                  Your account is safe.
                 </p>
               </div>
             </CardContent>
@@ -168,7 +168,7 @@ export default function CustomerRegister() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating Account...' : 'Sign Up'}
+                {isLoading ? 'Wait...' : 'Sign Up'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <div className="flex justify-center w-full mt-2">
