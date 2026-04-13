@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,7 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { UserCircle, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Navigation } from '@/components/Navigation';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 
 export default function CustomerLogin() {
@@ -20,6 +19,14 @@ export default function CustomerLogin() {
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const { user, loading: userLoading } = useUser();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (!userLoading && user) {
+      router.push('/');
+    }
+  }, [user, userLoading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,11 +68,15 @@ export default function CustomerLogin() {
     }
   };
 
+  if (userLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">SYNCHRONIZING...</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
       <div className="flex-1 flex items-center justify-center p-4">
-        <Card className="w-full max-sm bg-card border-primary/20 shadow-2xl">
+        <Card className="w-full max-w-sm bg-card border-primary/20 shadow-2xl">
           <CardHeader className="text-center space-y-1">
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <UserCircle className="w-6 h-6 text-primary" />

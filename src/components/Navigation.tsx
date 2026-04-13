@@ -1,25 +1,21 @@
-
 "use client";
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { ShoppingCart, Zap, UserCircle, Menu, X, Search, MapPin, Shield } from 'lucide-react';
+import { ShoppingCart, Zap, UserCircle, Menu, X, Search, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/firebase';
 
 export function Navigation() {
   const { cart, settings } = useStore();
+  const { user } = useUser();
   const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
-  useEffect(() => {
-    setIsLoggedIn(localStorage.getItem('gz_user_auth') === 'true');
-  }, []);
 
   const cartCount = cart.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -72,7 +68,6 @@ export function Navigation() {
         </div>
 
         <div className="flex items-center gap-2 ml-auto lg:ml-0">
-          {/* Search Toggle */}
           <div className="relative flex items-center">
             {isSearchOpen ? (
               <form onSubmit={handleSearch} className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center bg-card border border-primary/30 rounded-full px-4 h-7 w-[150px] sm:w-[200px] animate-in slide-in-from-right-2 duration-300">
@@ -106,9 +101,9 @@ export function Navigation() {
             </Button>
           </Link>
           
-          <Link href={isLoggedIn ? "/profile" : "/login"} className="hidden sm:inline-flex">
-            <Button variant="ghost" size="icon" className={`h-7 w-7 rounded-full border border-transparent ${isLoggedIn ? 'text-primary' : 'hover:text-primary'}`}>
-              {isLoggedIn ? <Shield className="w-3.5 h-3.5" /> : <UserCircle className="w-3.5 h-3.5" />}
+          <Link href={user ? "/profile" : "/login"} className="hidden sm:inline-flex">
+            <Button variant="ghost" size="icon" className={`h-7 w-7 rounded-full border border-transparent ${user ? 'text-primary' : 'hover:text-primary'}`}>
+              {user ? <ShieldCheck className="w-3.5 h-3.5" /> : <UserCircle className="w-3.5 h-3.5" />}
             </Button>
           </Link>
 
@@ -129,8 +124,9 @@ export function Navigation() {
           <Link href="/track-order" className="text-secondary flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
             <Search className="w-3.5 h-3.5" /> Track Order
           </Link>
-          <Link href="/login" onClick={() => setIsMenuOpen(false)} className="text-primary">Login</Link>
-          <Link href="/admin/login" onClick={() => setIsMenuOpen(false)} className="text-[7px] opacity-50">Admin</Link>
+          <Link href={user ? "/profile" : "/login"} onClick={() => setIsMenuOpen(false)} className={user ? "text-primary" : ""}>
+            {user ? "Profile" : "Login"}
+          </Link>
         </div>
       )}
     </nav>
