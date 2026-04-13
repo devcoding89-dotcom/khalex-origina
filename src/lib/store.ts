@@ -8,8 +8,8 @@ import {
   deleteDoc, 
   query, 
   orderBy, 
-  limit,
-  serverTimestamp
+  serverTimestamp,
+  Timestamp
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -28,6 +28,7 @@ export interface Product {
   category: Category;
   description: string;
   price: number;
+  oldPrice?: number;
   costPrice: number;
   stock: number;
   stockAlert: number;
@@ -37,16 +38,21 @@ export interface Product {
   specs: Record<string, string>;
   status: ProductStatus;
   isFeatured: boolean;
+  type: 'physical' | 'digital' | 'service';
   salesCount: number;
   views: number;
   createdAt: any;
+  updatedAt?: any;
 }
 
 export interface Order {
   id: string;
+  displayId: string;
   customerName: string;
   whatsapp: string;
   email?: string;
+  codUid?: string;
+  codIgn?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
@@ -60,9 +66,12 @@ export interface Customer {
   id: string;
   name: string;
   whatsapp: string;
+  email?: string;
   totalSpent: number;
   orderCount: number;
   lastOrderDate: any;
+  joinedDate: string;
+  group: 'regular' | 'vip' | 'new';
 }
 
 export interface StoreSettings {
@@ -108,21 +117,27 @@ export function useStore() {
   const addProduct = (p: Partial<Product>) => {
     const id = p.id || `p-${Date.now()}`;
     const ref = doc(db, 'products', id);
-    setDoc(ref, { 
+    const newProduct = { 
       ...p, 
       id, 
       createdAt: serverTimestamp(),
       salesCount: 0,
-      views: 0
-    }, { merge: true }).catch(err => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: p }));
+      views: 0,
+      status: p.status || 'active',
+      isFeatured: p.isFeatured || false,
+      trackInventory: true,
+      stockAlert: p.stockAlert || 5
+    };
+    setDoc(ref, newProduct, { merge: true }).catch(err => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newProduct }));
     });
   };
 
   const updateProduct = (p: Product) => {
     const ref = doc(db, 'products', p.id);
-    setDoc(ref, { ...p, updatedAt: serverTimestamp() }, { merge: true }).catch(err => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: p }));
+    const updateData = { ...p, updatedAt: serverTimestamp() };
+    setDoc(ref, updateData, { merge: true }).catch(err => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
     });
   };
 
@@ -134,29 +149,64 @@ export function useStore() {
   };
 
   const createOrder = (orderData: any) => {
-    const id = `ORD-${Date.now()}`;
+    const timestamp = Date.now();
+    const id = `ORD-${timestamp}`;
+    const displayId = `#${timestamp.toString().slice(-6)}`;
     const ref = doc(db, 'orders', id);
+    
     const newOrder = {
       ...orderData,
       id,
+      displayId,
       status: 'pending',
       paymentStatus: 'pending',
       priority: 'normal',
       createdAt: serverTimestamp(),
-      timeline: [{ status: 'pending', timestamp: new Date().toISOString(), by: 'System', note: 'Mission received.' }]
+      timeline: [{ 
+        status: 'pending', 
+        timestamp: new Date().toISOString(), 
+        by: 'System', 
+        note: 'Mission received and logged in cloud database.' 
+      }]
     };
+    
     setDoc(ref, newOrder).catch(err => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newOrder }));
     });
+
+    // Update or Create Customer
+    const customerRef = doc(db, 'customers', orderData.whatsapp);
+    setDoc(customerRef, {
+      id: orderData.whatsapp,
+      name: orderData.customerName,
+      whatsapp: orderData.whatsapp,
+      email: orderData.email || '',
+      totalSpent: (customers.find(c => c.whatsapp === orderData.whatsapp)?.totalSpent || 0) + orderData.total,
+      orderCount: (customers.find(c => c.whatsapp === orderData.whatsapp)?.orderCount || 0) + 1,
+      lastOrderDate: serverTimestamp(),
+      joinedDate: customers.find(c => c.whatsapp === orderData.whatsapp)?.joinedDate || new Date().toISOString(),
+      group: 'regular'
+    }, { merge: true });
+
     return { ...newOrder, id };
   };
 
   const updateOrderStatus = (id: string, status: OrderStatus) => {
     const ref = doc(db, 'orders', id);
+    const existingOrder = orders.find(o => o.id === id);
+    const currentTimeline = existingOrder?.timeline || [];
+    
     setDoc(ref, { 
       status, 
-      timeline: [{ status, timestamp: new Date().toISOString(), by: 'Admin', note: `Status updated to ${status}` }] 
-    }, { merge: true });
+      timeline: [...currentTimeline, { 
+        status, 
+        timestamp: new Date().toISOString(), 
+        by: 'Admin', 
+        note: `Strategic status updated to ${status}` 
+      }] 
+    }, { merge: true }).catch(err => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update' }));
+    });
   };
 
   const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
@@ -169,7 +219,6 @@ export function useStore() {
   };
 
   const addToCart = (p: Product, qty: number = 1) => {
-    // Local cart logic remains the same (client-side only for now)
     const savedCart = JSON.parse(localStorage.getItem('gz_cart') || '[]');
     const existing = savedCart.find((item: any) => item.id === p.id);
     let newCart;
@@ -182,7 +231,6 @@ export function useStore() {
     window.dispatchEvent(new Event('storage'));
   };
 
-  // Cart reading needs to be handled via window storage event in individual components
   const cart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('gz_cart') || '[]') : [];
 
   return {
@@ -201,6 +249,12 @@ export function useStore() {
     addToCart,
     removeFromCart: (id: string) => {
        const newCart = cart.filter((item: any) => item.id !== id);
+       localStorage.setItem('gz_cart', JSON.stringify(newCart));
+       window.dispatchEvent(new Event('storage'));
+    },
+    updateQuantity: (id: string, qty: number) => {
+       if (qty < 1) return;
+       const newCart = cart.map((item: any) => item.id === id ? { ...item, quantity: qty } : item);
        localStorage.setItem('gz_cart', JSON.stringify(newCart));
        window.dispatchEvent(new Event('storage'));
     },
