@@ -20,10 +20,9 @@ export default function AdminLoginPage() {
   const router = useRouter();
   const { toast } = useToast();
 
-  // Redirect if already logged in via override
   useEffect(() => {
     if (localStorage.getItem('admin_override_session') === 'active') {
-      router.push('/admin/dashboard');
+      router.replace('/admin/dashboard');
     }
   }, [router]);
 
@@ -31,11 +30,10 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // PRIVATE SYSTEM OVERRIDE
     if (username === 'khlex' && password === 'gaming123') {
       localStorage.setItem('admin_override_session', 'active');
       toast({
-        title: "Override Granted",
+        title: "System Override Activated",
         description: "Welcome back, Commander.",
       });
       router.push('/admin/dashboard');
@@ -48,7 +46,7 @@ export default function AdminLoginPage() {
       localStorage.removeItem('admin_override_session');
       toast({
         title: "Access Granted",
-        description: "Welcome back.",
+        description: "Credentials verified.",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
@@ -56,7 +54,7 @@ export default function AdminLoginPage() {
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: "Check your credentials.",
+        description: "Incorrect callsign or access key.",
       });
     } finally {
       setIsLoading(false);
@@ -107,7 +105,7 @@ export default function AdminLoginPage() {
               disabled={isLoading}
               className="w-full h-14 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm hover:shadow-[0_0_20px_rgba(0,255,136,0.3)]"
             >
-              {isLoading ? "Authenticating..." : "Establish Uplink"}
+              {isLoading ? "Verifying..." : "Establish Uplink"}
             </Button>
           </form>
 
