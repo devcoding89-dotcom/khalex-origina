@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Lock, Info, Zap } from 'lucide-react';
+import { ShieldCheck, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -46,9 +46,6 @@ export default function AdminLoginPage() {
       router.push('/admin/dashboard');
     } catch (error: any) {
       console.error(error);
-      let message = "Invalid credentials.";
-      
-      // If the override fails and it's not the specific demo account
       toast({
         variant: "destructive",
         title: "Access Denied",
@@ -106,18 +103,6 @@ export default function AdminLoginPage() {
               {isLoading ? "Authenticating..." : "Establish Uplink"}
             </Button>
           </form>
-          
-          <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10 flex gap-3">
-            <Zap className="w-4 h-4 text-primary shrink-0" />
-            <div className="space-y-1">
-              <p className="text-[9px] font-black uppercase text-primary italic">Fast Track Access</p>
-              <p className="text-[8px] text-muted-foreground uppercase leading-relaxed font-bold">
-                Use your custom credentials to log in instantly. 
-                Username: <span className="text-foreground">khlex</span> | 
-                Password: <span className="text-foreground">gaming123</span>
-              </p>
-            </div>
-          </div>
 
           <div className="mt-8 pt-6 border-t border-white/5 text-center">
             <div className="flex items-center justify-center gap-2 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
