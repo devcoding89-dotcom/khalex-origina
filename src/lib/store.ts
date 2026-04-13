@@ -121,7 +121,7 @@ export function useStore() {
   
   const settings: StoreSettings = settingsData || {
     storeName: 'KHALEX hub',
-    whatsapp: '2349166990529',
+    whatsapp: '2349166905298',
     email: 'khaleedadefemi1@gmail.com',
     address: 'no7 hiltop estate aboru lagos',
     currencySymbol: '₦',
