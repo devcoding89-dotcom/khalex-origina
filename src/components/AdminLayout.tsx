@@ -42,13 +42,14 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        setIsAuthenticating(false);
-      } else {
-        router.replace('/admin/login');
-      }
-    });
+    // Use local session check for speed and offline reliability
+    const session = localStorage.getItem('khalex_admin_session');
+    
+    if (session !== 'active') {
+      router.replace('/admin/login');
+    } else {
+      setIsAuthenticating(false);
+    }
 
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -59,15 +60,15 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     window.addEventListener('offline', handleOffline);
     
     return () => {
-      unsubscribe();
       clearInterval(timer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [auth, router]);
+  }, [router]);
 
   const handleLogout = async () => {
     try {
+      localStorage.removeItem('khalex_admin_session');
       await signOut(auth);
       router.push('/admin/login');
     } catch (error) {
@@ -78,7 +79,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (isAuthenticating) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">
-        Establishing Secure Cloud Link...
+        Verifying Security Clearence...
       </div>
     );
   }
@@ -103,7 +104,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
           <div className="p-6 border-b flex items-center justify-between">
             <Link href="/admin/dashboard" className="flex items-center gap-2">
               <Gamepad2 className="w-8 h-8 text-primary" />
-              {isSidebarOpen && <span className="font-headline font-black tracking-tighter text-lg uppercase italic">Admin Hub</span>}
+              {isSidebarOpen && <span className="font-headline font-black tracking-tighter text-lg uppercase italic text-primary">KHALEX Hub</span>}
             </Link>
             <Button variant="ghost" size="icon" className="md:hidden" onClick={() => setSidebarOpen(false)}>
               <X className="w-5 h-5" />
@@ -167,7 +168,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 {isOnline ? (
                   <>
                     <Zap className="w-2.5 h-2.5" />
-                    LIVE SYNC
+                    CLOUD CONNECTED
                   </>
                 ) : (
                   <>
@@ -183,7 +184,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
             <div className="relative hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground" />
               <input 
-                placeholder="Search..." 
+                placeholder="Search Database..." 
                 className="bg-background border border-primary/10 rounded-full h-8 pl-9 pr-4 text-[10px] w-48 focus:outline-none focus:border-primary transition-all uppercase font-bold"
               />
             </div>

@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
 import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
+import { ShieldCheck, AlertCircle, Loader2, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -20,45 +20,46 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user) {
-        router.replace('/admin/dashboard');
-      }
-    });
-    return () => unsubscribe();
-  }, [router, auth]);
+    // If they already have a local session, just go to dashboard
+    const localSession = localStorage.getItem('khalex_admin_session');
+    if (localSession === 'active') {
+      router.replace('/admin/dashboard');
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Map 'admin' callsign to the email for Firebase Auth
-      const email = username.toLowerCase() === 'admin' 
-        ? 'admin@khalexhub.com' 
-        : (username.includes('@') ? username : `${username.toLowerCase()}@khalexhub.com`);
-      
-      await signInWithEmailAndPassword(auth, email, password);
-      
-      toast({
-        title: "Access Granted",
-        description: "Cloud session established. Redirecting...",
-      });
-      router.push('/admin/dashboard');
-    } catch (error: any) {
-      console.error('Login error:', error.code, error.message);
-      let message = "Incorrect callsign or access key.";
-      
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        message = "Access Denied. Ensure you have added 'admin@khalexhub.com' to your Firebase Console Auth tab.";
-      } else if (error.code === 'auth/network-request-failed') {
-        message = "Network error. The connection was blocked.";
+      // Hardcoded check for 'admin' / 'gaming2025'
+      if (username.toLowerCase() === 'admin' && password === 'gaming2025') {
+        
+        // Silently sign in to Firebase Anonymously so we have a session for Firestore
+        await signInAnonymously(auth);
+        
+        // Set local session flag
+        localStorage.setItem('khalex_admin_session', 'active');
+        
+        toast({
+          title: "Access Granted",
+          description: "Admin session established. Redirecting to dashboard...",
+        });
+        
+        router.push('/admin/dashboard');
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Access Denied",
+          description: "Incorrect username or password. Please try again.",
+        });
       }
-
+    } catch (error: any) {
+      console.error('Login error:', error);
       toast({
         variant: "destructive",
-        title: "Access Denied",
-        description: message,
+        title: "System Error",
+        description: "Failed to establish cloud link. Please check your internet.",
       });
     } finally {
       setIsLoading(false);
@@ -75,34 +76,34 @@ export default function AdminLoginPage() {
               <ShieldCheck className="w-8 h-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">Admin Hub</CardTitle>
+          <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">KHALEX ADMIN</CardTitle>
           <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-            Restricted access • Authorized Personnel Only
+            Secured Access • Authorized Personnel Only
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign (e.g. admin)</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Username</Label>
               <Input 
                 type="text" 
                 required 
                 disabled={isLoading}
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Username"
+                placeholder="admin"
                 className="bg-background border-primary/10 h-12 font-bold"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Access Key</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Password</Label>
               <Input 
                 type="password" 
                 required 
                 disabled={isLoading}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Password"
+                placeholder="••••••••"
                 className="bg-background border-primary/10 h-12"
               />
             </div>
@@ -113,16 +114,16 @@ export default function AdminLoginPage() {
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Authenticating...
                 </span>
-              ) : "Establish Uplink"}
+              ) : "Login to Dashboard"}
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3">
-             <AlertCircle className="w-5 h-5 text-primary shrink-0" />
+          <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3 items-center">
+             <Lock className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Sync Notice: Use 'admin' to log in. Ensure you have added 'admin@khalexhub.com' to your Firebase Console Auth tab first.
+               Database Sync Enabled. Your changes will reflect on all customer devices instantly.
              </p>
           </div>
         </CardContent>
