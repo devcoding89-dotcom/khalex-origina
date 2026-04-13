@@ -62,7 +62,7 @@ export default function AdminLoginPage() {
           </div>
           <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">Admin Hub</CardTitle>
           <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-            Restricted access • Personnel only
+            Restricted access &bull; Personnel only
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
@@ -119,7 +119,7 @@ export default function AdminLoginPage() {
       </Card>
       
       <div className="mt-8 text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-        KHALEX Hub • System v2.0
+        KHALEX Hub &bull; System v2.0
       </div>
     </div>
   );

@@ -143,7 +143,7 @@ export function useStore() {
       trackInventory: true,
       stockAlert: p.stockAlert || 5
     };
-    setDoc(ref, newProduct, { merge: true }).catch(err => {
+    setDoc(ref, newProduct, { merge: true }).catch(async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newProduct }));
     });
   };
@@ -151,14 +151,14 @@ export function useStore() {
   const updateProduct = (p: Product) => {
     const ref = doc(db, 'products', p.id);
     const updateData = { ...p, updatedAt: serverTimestamp() };
-    setDoc(ref, updateData, { merge: true }).catch(err => {
+    setDoc(ref, updateData, { merge: true }).catch(async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
     });
   };
 
   const deleteProduct = (id: string) => {
     const ref = doc(db, 'products', id);
-    deleteDoc(ref).catch(err => {
+    deleteDoc(ref).catch(async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' }));
     });
   };
@@ -185,14 +185,14 @@ export function useStore() {
       }]
     };
     
-    setDoc(ref, newOrder).catch(err => {
+    setDoc(ref, newOrder).catch(async (err) => {
       errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'create', requestResourceData: newOrder }));
     });
 
     const customerRef = doc(db, 'customers', orderData.whatsapp);
     const existingCustomer = customers.find(c => c.whatsapp === orderData.whatsapp);
     
-    setDoc(customerRef, {
+    const customerData = {
       id: orderData.whatsapp,
       name: orderData.customerName,
       whatsapp: orderData.whatsapp,
@@ -201,8 +201,12 @@ export function useStore() {
       orderCount: (existingCustomer?.orderCount || 0) + 1,
       lastOrderDate: serverTimestamp(),
       joinedDate: existingCustomer?.joinedDate || new Date().toISOString(),
-      group: existingCustomer?.group || 'regular'
-    }, { merge: true });
+      group: (existingCustomer?.group as any) || 'regular'
+    };
+
+    setDoc(customerRef, customerData, { merge: true }).catch(async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: customerRef.path, operation: 'update', requestResourceData: customerData }));
+    });
 
     return { ...newOrder, id };
   };
@@ -212,7 +216,7 @@ export function useStore() {
     const existingOrder = orders.find(o => o.id === id);
     const currentTimeline = existingOrder?.timeline || [];
     
-    setDoc(ref, { 
+    const updateData = { 
       status, 
       timeline: [...currentTimeline, { 
         status, 
@@ -220,22 +224,28 @@ export function useStore() {
         by: 'Admin', 
         note: customNote || `Order status updated to ${status.toUpperCase()}` 
       }] 
-    }, { merge: true }).catch(err => {
-      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update' }));
+    };
+
+    setDoc(ref, updateData, { merge: true }).catch(async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
     });
   };
 
   const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
     const ref = doc(db, 'orders', id);
-    setDoc(ref, { paymentStatus }, { merge: true });
+    setDoc(ref, { paymentStatus }, { merge: true }).catch(async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { paymentStatus } }));
+    });
   };
 
   const updateSettings = (s: StoreSettings) => {
-    setDoc(settingsRef, s, { merge: true });
+    setDoc(settingsRef, s, { merge: true }).catch(async (err) => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({ path: settingsRef.path, operation: 'update', requestResourceData: s }));
+    });
   };
 
   const addToCart = (p: Product, qty: number = 1) => {
-    const savedCart = JSON.parse(localStorage.getItem('gz_cart') || '[]');
+    const savedCart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('gz_cart') || '[]') : [];
     const existing = savedCart.find((item: any) => item.id === p.id);
     let newCart;
     if (existing) {
