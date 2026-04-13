@@ -94,13 +94,13 @@ export interface StoreSettings {
 export function useStore() {
   const db = useFirestore();
 
-  // Queries
-  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(100)), [db]);
-  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(100)), [db]);
-  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(100)), [db]);
+  // Queries - Using simple queries for better cross-device sync
+  const productsQuery = useMemo(() => query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(50)), [db]);
+  const ordersQuery = useMemo(() => query(collection(db, 'orders'), orderBy('createdAt', 'desc'), limit(50)), [db]);
+  const customersQuery = useMemo(() => query(collection(db, 'customers'), limit(50)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
 
-  // Data Stream
+  // Data Stream - Real-time listeners
   const { data: productsData, loading: productsLoading } = useCollection<Product>(productsQuery);
   const { data: ordersData } = useCollection<Order>(ordersQuery);
   const { data: customersData } = useCollection<Customer>(customersQuery);
@@ -139,6 +139,9 @@ export function useStore() {
     };
 
     setDoc(ref, newProduct, { merge: true })
+      .then(() => {
+        toast({ title: "Cloud Sync Success", description: `${p.name} is now live on all devices.` });
+      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
@@ -158,6 +161,9 @@ export function useStore() {
     };
 
     setDoc(ref, updateData, { merge: true })
+      .then(() => {
+        toast({ title: "Update Success", description: "Changes synced to cloud." });
+      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
@@ -170,6 +176,9 @@ export function useStore() {
   const deleteProduct = (id: string) => {
     const ref = doc(db, 'products', id);
     deleteDoc(ref)
+      .then(() => {
+        toast({ title: "Asset Deleted", description: "Product removed from cloud." });
+      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: ref.path,
@@ -272,6 +281,9 @@ export function useStore() {
 
   const updateSettings = (s: StoreSettings) => {
     setDoc(settingsRef, s, { merge: true })
+      .then(() => {
+        toast({ title: "Settings Saved", description: "Global configuration updated." });
+      })
       .catch(async (err) => {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
           path: settingsRef.path,

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -43,10 +42,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
-    const isOverrideActive = typeof window !== 'undefined' && localStorage.getItem('admin_override_session') === 'active';
-    
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user || isOverrideActive) {
+      if (user) {
         setIsAuthenticating(false);
       } else {
         router.replace('/admin/login');
@@ -72,7 +69,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      localStorage.removeItem('admin_override_session');
       router.push('/admin/login');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -82,7 +78,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   if (isAuthenticating) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">
-        Verifying Security Credentials...
+        Establishing Secure Cloud Link...
       </div>
     );
   }
@@ -171,7 +167,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 {isOnline ? (
                   <>
                     <Zap className="w-2.5 h-2.5" />
-                    SYSTEM ONLINE
+                    LIVE SYNC
                   </>
                 ) : (
                   <>

@@ -22,7 +22,6 @@ export default function AdminLoginPage() {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        localStorage.setItem('admin_override_session', 'active');
         router.replace('/admin/dashboard');
       }
     });
@@ -34,35 +33,26 @@ export default function AdminLoginPage() {
     setIsLoading(true);
 
     try {
-      // Construct email from username
-      const email = username.includes('@') ? username : `${username.toLowerCase()}@khalexhub.com`;
+      // Map 'khlex' to a proper email if user just types the callsign
+      const email = username.toLowerCase() === 'khlex' 
+        ? 'khlex@khalexhub.com' 
+        : (username.includes('@') ? username : `${username.toLowerCase()}@khalexhub.com`);
       
-      // Attempt Firebase Auth login
+      // Real Firebase Auth login
       await signInWithEmailAndPassword(auth, email, password);
       
-      localStorage.setItem('admin_override_session', 'active');
       toast({
         title: "Access Granted",
-        description: "Secure uplink established. Cloud sync active.",
+        description: "Cloud session established. You are now live.",
       });
       router.push('/admin/dashboard');
     } catch (error: any) {
       console.error(error);
-      
-      // Handle "khlex" specifically for first-time setup guidance
-      if (username.toLowerCase() === 'khlex' && password === 'gaming123') {
-         toast({
-          variant: "destructive",
-          title: "Cloud Login Required",
-          description: "You must create 'khlex@khalexhub.com' in your Firebase Console Auth tab with password 'gaming123' to enable cross-device syncing.",
-        });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Access Denied",
-          description: "Incorrect callsign or access key. Check your Firebase Auth users.",
-        });
-      }
+      toast({
+        variant: "destructive",
+        title: "Access Denied",
+        description: "Incorrect callsign or access key. Ensure user is added in Firebase Console Auth.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -119,21 +109,11 @@ export default function AdminLoginPage() {
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3">
              <AlertCircle className="w-5 h-5 text-primary shrink-0" />
              <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Sync Notice: Ensure you have added your admin user to the Firebase Console to enable multi-device visibility.
+               Sync Notice: Ensure you have added 'khlex@khalexhub.com' to your Firebase Console Auth tab to sync data to other devices.
              </p>
-          </div>
-
-          <div className="mt-8 pt-6 border-t border-white/5 text-center">
-            <div className="flex items-center justify-center gap-2 text-[8px] font-bold text-muted-foreground uppercase tracking-widest">
-              <Lock className="w-3 h-3" /> Encrypted Cloud Connection
-            </div>
           </div>
         </CardContent>
       </Card>
-      
-      <div className="mt-8 text-[8px] font-black uppercase tracking-[0.3em] text-muted-foreground/30">
-        KHALEX Hub • System v2.0
-      </div>
     </div>
   );
 }
