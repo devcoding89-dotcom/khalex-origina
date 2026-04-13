@@ -24,11 +24,12 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    // SYSTEM OVERRIDE: Check for specific local credentials
+    // SYSTEM OVERRIDE: Check for specific private credentials
     if (username === 'khlex' && password === 'gaming123') {
+      localStorage.setItem('admin_override_session', 'active');
       toast({
         title: "Override Granted",
-        description: "Welcome back, Commander Khlex. Bypassing cloud authentication.",
+        description: "Welcome back, Commander Khlex.",
       });
       router.push('/admin/dashboard');
       setIsLoading(false);
@@ -36,9 +37,9 @@ export default function AdminLoginPage() {
     }
 
     try {
-      // Fallback to real Firebase Auth if they use an email
       const email = username.includes('@') ? username : `${username}@khalexhub.com`;
       await signInWithEmailAndPassword(auth, email, password);
+      localStorage.removeItem('admin_override_session');
       toast({
         title: "Access Granted",
         description: "Welcome back, Commander.",
@@ -74,7 +75,7 @@ export default function AdminLoginPage() {
         <CardContent className="p-8 pt-0">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign (Username)</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign</Label>
               <Input 
                 type="text" 
                 required 
@@ -85,7 +86,7 @@ export default function AdminLoginPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Access Key (Password)</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Access Key</Label>
               <Input 
                 type="password" 
                 required 
