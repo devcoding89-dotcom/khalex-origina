@@ -37,14 +37,27 @@ export default function CustomerLogin() {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Welcome Back",
-        description: "You have logged in successfully.",
+        description: "Login successful.",
       });
       router.push('/');
     } catch (error: any) {
+      console.error(error);
+      let message = "Please check your email and password.";
+      
+      if (error.code === 'auth/invalid-api-key') {
+        message = "Firebase API Key is invalid. Go to src/firebase/config.ts and paste your real keys.";
+      } else if (error.code === 'auth/user-not-found') {
+        message = "No account found with this email.";
+      } else if (error.code === 'auth/wrong-password') {
+        message = "Incorrect password.";
+      } else if (error.message) {
+        message = error.message;
+      }
+
       toast({
         variant: "destructive",
         title: "Login Failed",
-        description: error.message || "Please check your email and password.",
+        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -56,7 +69,7 @@ export default function CustomerLogin() {
     try {
       await signInWithPopup(auth, provider);
       toast({
-        title: "Welcome Back",
+        title: "Welcome",
         description: "Logged in with Google successfully.",
       });
       router.push('/');
@@ -127,7 +140,7 @@ export default function CustomerLogin() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Wait...' : 'Login'}
+                {isLoading ? 'Checking...' : 'Login'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <Button 

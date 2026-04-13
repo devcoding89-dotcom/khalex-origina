@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -11,20 +11,47 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { UserPlus, ShieldCheck, ArrowRight } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Navigation } from '@/components/Navigation';
-import { useAuth } from '@/firebase';
+import { useAuth, useUser } from '@/firebase';
 import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
 
 export default function CustomerRegister() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
   const auth = useAuth();
+  const { user, loading: userLoading } = useUser();
+
+  useEffect(() => {
+    if (!userLoading && user) {
+      router.push('/');
+    }
+  }, [user, userLoading, router]);
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Passwords do not match",
+        description: "Please make sure both passwords are the same.",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        variant: "destructive",
+        title: "Password too short",
+        description: "Password should be at least 6 characters.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -36,14 +63,25 @@ export default function CustomerRegister() {
       
       toast({
         title: "Account Created",
-        description: "Welcome to KHALEX hub! You can now start shopping.",
+        description: "Welcome! You can now start shopping.",
       });
       router.push('/');
     } catch (error: any) {
+      console.error(error);
+      let message = "Could not create account. Please try again.";
+      
+      if (error.code === 'auth/invalid-api-key') {
+        message = "Firebase API Key is missing or invalid. Please check your config.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        message = "This email is already registered.";
+      } else if (error.message) {
+        message = error.message;
+      }
+
       toast({
         variant: "destructive",
         title: "Registration Failed",
-        description: error.message || "Could not create account. Please try again.",
+        description: message,
       });
     } finally {
       setIsLoading(false);
@@ -68,6 +106,10 @@ export default function CustomerRegister() {
     }
   };
 
+  if (userLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse">Loading...</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navigation />
@@ -77,9 +119,9 @@ export default function CustomerRegister() {
             <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-2">
               <UserPlus className="w-6 h-6 text-primary" />
             </div>
-            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Register</CardTitle>
+            <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">Sign Up</CardTitle>
             <CardDescription className="text-[10px] uppercase font-bold text-muted-foreground">
-              Join the hub to get started
+              Create an account to join the shop
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleRegister}>
@@ -113,9 +155,21 @@ export default function CustomerRegister() {
                 <Input 
                   id="password" 
                   type="password" 
-                  placeholder="••••••••"
+                  placeholder="At least 6 characters"
                   value={password} 
                   onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="bg-background border-primary/20 h-10 text-xs"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-[10px] font-black uppercase tracking-widest">Confirm Password</Label>
+                <Input 
+                  id="confirmPassword" 
+                  type="password" 
+                  placeholder="Re-type your password"
+                  value={confirmPassword} 
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   className="bg-background border-primary/20 h-10 text-xs"
                 />
@@ -124,7 +178,7 @@ export default function CustomerRegister() {
               <div className="p-3 bg-primary/5 border border-primary/10 rounded-lg flex gap-2 items-center">
                 <ShieldCheck className="w-4 h-4 text-primary shrink-0" />
                 <p className="text-[8px] text-muted-foreground uppercase font-bold leading-tight">
-                  Your privacy is our priority.
+                  Your data is protected by secure encryption.
                 </p>
               </div>
             </CardContent>
@@ -134,7 +188,7 @@ export default function CustomerRegister() {
                 className="w-full h-11 bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs"
                 disabled={isLoading}
               >
-                {isLoading ? 'Creating...' : 'Create Account'}
+                {isLoading ? 'Creating Account...' : 'Sign Up'}
                 {!isLoading && <ArrowRight className="ml-2 w-4 h-4" />}
               </Button>
               <Button 
