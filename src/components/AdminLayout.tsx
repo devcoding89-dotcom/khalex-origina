@@ -19,7 +19,9 @@ import {
   X,
   Plus,
   Gamepad2,
-  Clock
+  Clock,
+  CloudLightning,
+  Wifi
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,9 +36,9 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
+  const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    // Check authentication
     const auth = localStorage.getItem('gz_admin_auth');
     if (auth !== 'true') {
       router.replace('/admin/login');
@@ -44,10 +46,19 @@ export function AdminLayout({ children }: AdminLayoutProps) {
       setIsAuthorized(true);
     }
     
-    // Set time on client only to avoid hydration mismatch
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-    return () => clearInterval(timer);
+    
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      clearInterval(timer);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, [router]);
 
   const navItems = [
@@ -78,7 +89,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row overflow-hidden">
-      {/* Sidebar */}
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50 w-64 bg-card border-r transition-transform duration-300 transform
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-20'}
@@ -124,17 +134,30 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         </div>
       </aside>
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Top Bar */}
         <header className="h-20 border-b bg-card/50 backdrop-blur-md flex items-center justify-between px-8 z-40">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!isSidebarOpen)}>
               <Menu className="w-5 h-5" />
             </Button>
-            <div className="hidden lg:flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground">
-              <Clock className="w-3 h-3 text-primary" />
-              {currentTime ? `${currentTime.toLocaleTimeString()} | ${currentTime.toLocaleDateString()}` : '--:--:--'}
+            <div className="hidden lg:flex items-center gap-4">
+              <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                <Clock className="w-3 h-3 text-primary" />
+                {currentTime ? `${currentTime.toLocaleTimeString()}` : '--:--:--'}
+              </div>
+              <Badge variant="outline" className={`text-[8px] font-black border-none gap-1.5 ${isOnline ? 'bg-primary/10 text-primary' : 'bg-destructive/10 text-destructive'}`}>
+                {isOnline ? (
+                  <>
+                    <CloudLightning className="w-2.5 h-2.5" />
+                    CLOUD: LIVE SYNC
+                  </>
+                ) : (
+                  <>
+                    <Wifi className="w-2.5 h-2.5" />
+                    OFFLINE
+                  </>
+                )}
+              </Badge>
             </div>
           </div>
 
@@ -167,7 +190,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
         <main className="flex-1 overflow-y-auto p-8 relative">
           {children}
           
-          {/* Quick Action FAB */}
           <Link href="/admin/products?new=true">
             <Button className="fixed bottom-8 right-8 w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg shadow-primary/40 hover:scale-110 transition-transform z-50">
               <Plus className="w-8 h-8" />
