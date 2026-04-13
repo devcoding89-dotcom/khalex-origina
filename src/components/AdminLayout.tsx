@@ -72,12 +72,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     };
   }, [auth, router]);
 
-  const handleLogout = async () => {
-    localStorage.removeItem('admin_override_session');
-    await signOut(auth);
-    router.push('/admin/login');
-  };
-
   if (isAuthenticating) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">
@@ -129,17 +123,6 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               );
             })}
           </nav>
-
-          <div className="p-4 border-t">
-            <Button 
-              variant="ghost" 
-              onClick={handleLogout}
-              className="w-full justify-start gap-3 h-9 text-[10px] font-black uppercase tracking-widest text-destructive hover:bg-destructive/10"
-            >
-              <LogOut className="w-4 h-4" />
-              {isSidebarOpen && <span>Logout</span>}
-            </Button>
-          </div>
         </div>
       </aside>
 
