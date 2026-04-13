@@ -1,19 +1,13 @@
 /**
- * STEP-BY-STEP LINKING INSTRUCTIONS:
- * 
- * 1. Go to your Firebase Console: https://console.firebase.google.com/
- * 2. Select your project.
- * 3. Click the Web icon (</>) to register a new app.
- * 4. Copy the 'firebaseConfig' object they show you.
- * 5. Replace the placeholder values below with your real keys.
- * 
- * IMPORTANT: Without these keys, your data will NOT show up on other phones.
+ * Firebase Configuration for KHALEX Hub
+ * Linked to project: khalex-8ab96
  */
 export const firebaseConfig = {
-  apiKey: "PASTE_YOUR_API_KEY_HERE",
-  authDomain: "PASTE_YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "PASTE_YOUR_PROJECT_ID_HERE",
-  storageBucket: "PASTE_YOUR_PROJECT_ID.firebasestorage.app",
-  messagingSenderId: "PASTE_YOUR_SENDER_ID_HERE",
-  appId: "PASTE_YOUR_APP_ID_HERE"
+  apiKey: "AIzaSyAxFPt3KXYuYz444Vs84ji9xJfAn8TuCXE",
+  authDomain: "khalex-8ab96.firebaseapp.com",
+  projectId: "khalex-8ab96",
+  storageBucket: "khalex-8ab96.firebasestorage.app",
+  messagingSenderId: "1093138114653",
+  appId: "1:1093138114653:web:dc01a4dcf91e2bf79585b4",
+  measurementId: "G-C84M3N0H2K"
 };
