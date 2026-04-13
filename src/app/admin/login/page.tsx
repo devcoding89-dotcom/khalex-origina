@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -10,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Loader2, Lock, AlertCircle } from 'lucide-react';
+import { ShieldCheck, Loader2, Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
   const [username, setUsername] = useState('');
@@ -21,8 +20,8 @@ export default function AdminLoginPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const localSession = localStorage.getItem('khalex_admin_session');
-    if (localSession === 'active') {
+    const session = localStorage.getItem('khalex_admin_session');
+    if (session === 'active') {
       router.replace('/admin/dashboard');
     }
   }, [router]);
@@ -31,107 +30,70 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
-    try {
-      // Direct credentials check as requested: admin / gaming2025
-      if (username.toLowerCase() === 'admin' && password === 'gaming2025') {
-        
-        // Connect to Firebase Cloud silently to enable database writes
+    // Hardcoded credentials as requested: admin / gaming2025
+    if (username.toLowerCase() === 'admin' && password === 'gaming2025') {
+      try {
+        // Automatically connect to the Cloud Database using Anonymous Auth
         await signInAnonymously(auth);
         
         localStorage.setItem('khalex_admin_session', 'active');
-        
-        toast({
-          title: "Access Granted",
-          description: "Cloud database linked. Loading your armory...",
-        });
-        
+        toast({ title: "Secure Uplink Established", description: "You are now connected to the Cloud Armory." });
         router.push('/admin/dashboard');
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Access Denied",
-          description: "Invalid credentials. Please use 'admin' and 'gaming2025'.",
-        });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Cloud Jammed", description: "Could not link to the database. Check your internet." });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      console.error(error);
-      toast({
-        variant: "destructive",
-        title: "Database Sync Failed",
-        description: "Could not connect to the cloud. Check your internet.",
-      });
-    } finally {
+    } else {
       setIsLoading(false);
+      toast({ variant: "destructive", title: "Access Denied", description: "Invalid credentials." });
     }
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-      <Card className="w-full max-w-md bg-card border-primary/20 shadow-2xl relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-1 bg-primary animate-pulse" />
-        <CardHeader className="space-y-2 text-center pt-8">
+      <Card className="w-full max-w-md bg-card border-primary/20 shadow-2xl relative">
+        <div className="absolute top-0 left-0 w-full h-1 bg-primary" />
+        <CardHeader className="text-center pt-8">
           <div className="flex justify-center mb-4">
-            <div className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <ShieldCheck className="w-8 h-8 text-primary" />
-            </div>
+            <ShieldCheck className="w-12 h-12 text-primary" />
           </div>
-          <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">KHALEX Hub Admin</CardTitle>
-          <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-            System Manifest Login • Authorized Personnel
-          </CardDescription>
+          <CardTitle className="text-2xl font-black uppercase italic tracking-tighter">KHALEX Hub Admin</CardTitle>
+          <CardDescription className="text-[10px] uppercase font-bold tracking-widest">Authorized Personnel Only</CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Username</Label>
+              <Label className="uppercase font-black text-[10px]">Username</Label>
               <Input 
-                type="text" 
-                required 
-                disabled={isLoading}
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
-                className="bg-background border-primary/10 h-12 font-bold"
+                value={username} 
+                onChange={e => setUsername(e.target.value)}
+                placeholder="admin" 
+                className="bg-background h-12" 
+                disabled={isLoading} 
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Password</Label>
+              <Label className="uppercase font-black text-[10px]">Password</Label>
               <Input 
                 type="password" 
-                required 
-                disabled={isLoading}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="bg-background border-primary/10 h-12"
+                value={password} 
+                onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••" 
+                className="bg-background h-12" 
+                disabled={isLoading} 
               />
             </div>
-            <Button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full h-14 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm hover:shadow-[0_0_20px_rgba(0,255,136,0.3)] transition-all"
-            >
-              {isLoading ? (
-                <span className="flex items-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
-                </span>
-              ) : "Enter Dashboard"}
+            <Button type="submit" className="w-full h-14 bg-primary text-primary-foreground font-black uppercase tracking-widest text-sm" disabled={isLoading}>
+              {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Initiate Login"}
             </Button>
           </form>
-
           <div className="mt-6 p-4 bg-primary/5 border border-primary/20 rounded-lg flex gap-3 items-center">
-             <Lock className="w-5 h-5 text-primary shrink-0" />
-             <p className="text-[9px] text-muted-foreground uppercase font-bold leading-relaxed">
-               Real-time cloud sync is active. Updates will show on all devices instantly.
-             </p>
+             <Lock className="w-5 h-5 text-primary" />
+             <p className="text-[9px] text-muted-foreground uppercase font-bold">Real-time Cloud Sync is Active.</p>
           </div>
         </CardContent>
       </Card>
-      
-      <div className="mt-8 flex items-center gap-2 text-[10px] font-black uppercase text-muted-foreground tracking-widest">
-        <AlertCircle className="w-3 h-3 text-secondary" />
-        <span>Use 'admin' and 'gaming2025' to unlock</span>
-      </div>
     </div>
   );
 }

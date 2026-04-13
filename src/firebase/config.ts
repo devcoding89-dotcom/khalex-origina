@@ -9,5 +9,6 @@ export const firebaseConfig = {
   storageBucket: "khalex-8ab96.firebasestorage.app",
   messagingSenderId: "1093138114653",
   appId: "1:1093138114653:web:dc01a4dcf91e2bf79585b4",
-  measurementId: "G-C84M3N0H2K"
+  measurementId: "G-C84M3N0H2K",
+  databaseURL: "https://khalex-8ab96-default-rtdb.firebaseio.com"
 };

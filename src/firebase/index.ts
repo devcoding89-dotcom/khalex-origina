@@ -1,14 +1,13 @@
-
 'use client';
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
-import { getFirestore, Firestore, initializeFirestore, terminate } from 'firebase/firestore';
+import { getFirestore, Firestore, initializeFirestore, persistentLocalCache, persistentMultipleTabManager } from 'firebase/firestore';
 import { firebaseConfig } from './config';
 
 /**
- * Initializes Firebase with specific settings for maximum connectivity.
- * We use Long Polling to bypass firewall restrictions on mobile networks.
+ * Initializes Firebase with specific settings for cross-device real-time sync.
+ * We use experimentalForceLongPolling to bypass mobile network restrictions.
  */
 export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firestore } {
   let app: FirebaseApp;
@@ -22,10 +21,13 @@ export function initializeFirebase(): { app: FirebaseApp; auth: Auth; db: Firest
   
   let db: Firestore;
   try {
-    // Force Long Polling to prevent "Could not reach backend" errors on mobile data.
-    // This ensures data travels from your phone to the cloud reliably.
+    // Force Long Polling to prevent connectivity issues on restricted networks.
+    // This ensures data travels from one phone to the cloud and then to the other phone reliably.
     db = initializeFirestore(app, {
       experimentalForceLongPolling: true,
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager()
+      })
     });
   } catch (e) {
     db = getFirestore(app);
