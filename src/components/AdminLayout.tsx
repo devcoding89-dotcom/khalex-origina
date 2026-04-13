@@ -4,6 +4,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
+import { useAuth } from '@/firebase';
 import { 
   LayoutDashboard, 
   Package, 
@@ -20,7 +22,8 @@ import {
   Gamepad2,
   Clock,
   CloudLightning,
-  Wifi
+  Wifi,
+  LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,11 +34,22 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const auth = useAuth();
   const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [currentTime, setCurrentTime] = useState<Date | null>(null);
   const [isOnline, setIsOnline] = useState(true);
+  const [isAuthenticating, setIsAuthenticating] = useState(true);
 
   useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        router.push('/admin/login');
+      } else {
+        setIsAuthenticating(false);
+      }
+    });
+
     setCurrentTime(new Date());
     const timer = setInterval(() => setCurrentTime(new Date()), 1000);
     
@@ -45,11 +59,25 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     window.addEventListener('offline', handleOffline);
     
     return () => {
+      unsubscribe();
       clearInterval(timer);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
+  }, [auth, router]);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/admin/login');
+  };
+
+  if (isAuthenticating) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center text-primary font-headline animate-pulse text-xs uppercase tracking-widest">
+        Verifying Credentials...
+      </div>
+    );
+  }
 
   const navItems = [
     { label: 'Dashboard', icon: LayoutDashboard, href: '/admin/dashboard' },
@@ -94,6 +122,17 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               );
             })}
           </nav>
+
+          <div className="p-4 border-t">
+            <Button 
+              variant="ghost" 
+              onClick={handleLogout}
+              className="w-full justify-start gap-3 h-9 text-[10px] font-black uppercase tracking-widest text-destructive hover:bg-destructive/10"
+            >
+              <LogOut className="w-4 h-4" />
+              {isSidebarOpen && <span>Logout</span>}
+            </Button>
+          </div>
         </div>
       </aside>
 
