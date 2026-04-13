@@ -1,0 +1,73 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Gaming assets including phones, laptops, and digital accounts",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sku": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "price": { "type": "number" },
+        "stock": { "type": "number" },
+        "imageUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "draft", "sold_out"] }
+      }
+    },
+    "Order": {
+      "title": "Order",
+      "description": "Customer purchase records and mission status",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerName": { "type": "string" },
+        "total": { "type": "number" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Personnel database for CRM",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "totalSpent": { "type": "number" }
+      }
+    },
+    "StoreSettings": {
+      "title": "Store Settings",
+      "description": "Global configuration for KHALEX hub",
+      "type": "object",
+      "properties": {
+        "storeName": { "type": "string" },
+        "whatsapp": { "type": "string" },
+        "currencySymbol": { "type": "string" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google", "password"]
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Collection of available gaming equipment"
+    },
+    "/orders/{orderId}": {
+      "schema": "Order",
+      "description": "Manifest of all deployments"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Personnel database"
+    },
+    "/settings/global": {
+      "schema": "StoreSettings",
+      "description": "Global system parameters"
+    }
+  }
+}
