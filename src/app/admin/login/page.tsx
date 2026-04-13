@@ -10,10 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { ShieldCheck, Lock, Info } from 'lucide-react';
+import { ShieldCheck, Lock, Info, Zap } from 'lucide-react';
 
 export default function AdminLoginPage() {
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
@@ -24,7 +24,20 @@ export default function AdminLoginPage() {
     e.preventDefault();
     setIsLoading(true);
 
+    // SYSTEM OVERRIDE: Check for specific local credentials
+    if (username === 'khlex' && password === 'gaming123') {
+      toast({
+        title: "Override Granted",
+        description: "Welcome back, Commander Khlex. Bypassing cloud authentication.",
+      });
+      router.push('/admin/dashboard');
+      setIsLoading(false);
+      return;
+    }
+
     try {
+      // Fallback to real Firebase Auth if they use an email
+      const email = username.includes('@') ? username : `${username}@khalexhub.com`;
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Access Granted",
@@ -34,16 +47,12 @@ export default function AdminLoginPage() {
     } catch (error: any) {
       console.error(error);
       let message = "Invalid credentials.";
-      if (error.code === 'auth/invalid-api-key') {
-        message = "Firebase API Key is missing or invalid. Please check src/firebase/config.ts";
-      } else if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-        message = "User not found or incorrect credentials. Create an admin user in your Firebase Console.";
-      }
       
+      // If the override fails and it's not the specific demo account
       toast({
         variant: "destructive",
         title: "Access Denied",
-        description: message,
+        description: "Check your callsign and access key.",
       });
     } finally {
       setIsLoading(false);
@@ -62,24 +71,24 @@ export default function AdminLoginPage() {
           </div>
           <CardTitle className="text-2xl font-black uppercase tracking-tighter italic">Admin Hub</CardTitle>
           <CardDescription className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">
-            Restricted access &bull; Personnel only
+            Restricted access &bull; Authorized Personnel Only
           </CardDescription>
         </CardHeader>
         <CardContent className="p-8 pt-0">
           <form onSubmit={handleLogin} className="space-y-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Email Address</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Callsign (Username)</Label>
               <Input 
-                type="email" 
+                type="text" 
                 required 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@khalexhub.com"
-                className="bg-background border-primary/10 h-12"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Enter username"
+                className="bg-background border-primary/10 h-12 font-bold uppercase"
               />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase tracking-widest">Access Key</Label>
+              <Label className="text-[10px] font-black uppercase tracking-widest">Access Key (Password)</Label>
               <Input 
                 type="password" 
                 required 
@@ -99,14 +108,14 @@ export default function AdminLoginPage() {
           </form>
           
           <div className="mt-8 p-4 bg-primary/5 rounded-lg border border-primary/10 flex gap-3">
-            <Info className="w-4 h-4 text-primary shrink-0" />
+            <Zap className="w-4 h-4 text-primary shrink-0" />
             <div className="space-y-1">
-              <p className="text-[9px] font-black uppercase text-primary">Setup Instructions</p>
-              <div className="text-[8px] text-muted-foreground uppercase leading-relaxed font-bold">
-                <p>1. Go to Firebase Console &gt; Authentication &gt; Users</p>
-                <p>2. Click &quot;Add User&quot; and set your own email/password</p>
-                <p>3. Use those details here to log in</p>
-              </div>
+              <p className="text-[9px] font-black uppercase text-primary italic">Fast Track Access</p>
+              <p className="text-[8px] text-muted-foreground uppercase leading-relaxed font-bold">
+                Use your custom credentials to log in instantly. 
+                Username: <span className="text-foreground">khlex</span> | 
+                Password: <span className="text-foreground">gaming123</span>
+              </p>
             </div>
           </div>
 

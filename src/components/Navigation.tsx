@@ -3,7 +3,7 @@
 
 import Link from 'next/link';
 import { useStore } from '@/lib/store';
-import { ShoppingCart, Zap, Menu, X, Search } from 'lucide-react';
+import { ShoppingCart, Zap, Menu, X, Search, ShieldCheck } from 'lucide-react';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { useState } from 'react';
@@ -100,6 +100,12 @@ export function Navigation() {
             </Button>
           </Link>
 
+          <Link href="/admin/login">
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-primary">
+              <ShieldCheck className="w-4 h-4" />
+            </Button>
+          </Link>
+
           <Button variant="ghost" size="icon" className="lg:hidden h-7 w-7" onClick={() => setIsMenuOpen(!isMenuOpen)}>
             {isMenuOpen ? <X className="w-3.5 h-3.5" /> : <Menu className="w-3.5 h-3.5" />}
           </Button>
@@ -116,6 +122,9 @@ export function Navigation() {
           ))}
           <Link href="/track-order" className="text-secondary flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
             <Search className="w-3.5 h-3.5" /> Track Order
+          </Link>
+          <Link href="/admin/login" className="text-primary pt-2 border-t border-white/5 w-full text-center" onClick={() => setIsMenuOpen(false)}>
+            Admin Hub
           </Link>
         </div>
       )}
