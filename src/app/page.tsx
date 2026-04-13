@@ -17,8 +17,8 @@ export default function Home() {
     { label: 'Phones', value: 'phones', icon: '📱' },
     { label: 'Laptops', value: 'laptops', icon: '💻' },
     { label: 'Gadgets', value: 'gadgets', icon: '🎮' },
-    { label: 'CoD Accounts', value: 'cod', icon: '🎯' },
-    { label: 'CP Top-up', value: 'cp', icon: '💎' },
+    { label: 'Accounts', value: 'cod', icon: '🎯' },
+    { label: 'Top-up', value: 'cp', icon: '💎' },
   ];
 
   const storeNameParts = settings.storeName.split(' ');
@@ -38,7 +38,7 @@ export default function Home() {
             </span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black mb-4 leading-tight tracking-tighter uppercase italic">
-            Best <span className="text-primary neon-text">Gaming</span> Products
+            Level up your <span className="text-primary neon-text">Game</span>
           </h1>
           <p className="text-sm md:text-base text-muted-foreground mb-8 max-w-lg mx-auto font-medium uppercase tracking-wide">
             Phones, laptops, accounts and top-up services. 
@@ -64,10 +64,10 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
             {[
-              { icon: ShieldCheck, title: 'Safe & Secure', text: '100% Protection' },
-              { icon: Zap, title: 'Fast Delivery', text: 'Quick Delivery' },
+              { icon: ShieldCheck, title: 'Safe Payments', text: '100% Protection' },
+              { icon: Zap, title: 'Fast Delivery', text: 'Quick Shipping' },
               { icon: Radar, title: 'Live Tracking', text: 'Check Your Order' },
-              { icon: Gamepad2, title: 'Premium Quality', text: 'Top Gaming Products' },
+              { icon: Gamepad2, title: 'Top Quality', text: 'Premium Products' },
             ].map((badge, i) => (
               <div key={i} className="flex flex-col items-center text-center gap-1">
                 <badge.icon className="w-5 h-5 text-primary" />
@@ -84,7 +84,7 @@ export default function Home() {
       {/* Categories Grid */}
       <section className="py-12 bg-background">
         <div className="container mx-auto px-4">
-          <h2 className="text-xl font-black text-center mb-8 uppercase tracking-widest italic">Categories</h2>
+          <h2 className="text-xl font-black text-center mb-8 uppercase tracking-widest italic">Our Categories</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             {categories.map((cat) => (
               <Link 
@@ -119,10 +119,10 @@ export default function Home() {
           
           <div className="container mx-auto px-4 relative z-20 text-center space-y-4">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-secondary/20 border border-secondary/40 text-secondary text-[8px] font-black uppercase tracking-[0.3em] backdrop-blur-md">
-              <Play className="w-2.5 h-2.5 fill-current" /> Product Preview
+              <Play className="w-2.5 h-2.5 fill-current" /> Featured Item
             </div>
             <h2 className="text-4xl md:text-5xl font-black uppercase italic tracking-tighter leading-none">
-              Featured <span className="text-secondary neon-text">Products</span>
+              Top <span className="text-secondary neon-text">Products</span>
             </h2>
             <div className="max-w-md mx-auto">
               <h3 className="text-lg md:text-xl font-black uppercase tracking-tight text-white mb-1">{videoProduct.name}</h3>
@@ -144,7 +144,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-8">
             <div>
-              <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-1">Featured Items</h2>
+              <h2 className="text-2xl font-black italic tracking-tighter uppercase mb-1">Featured Gear</h2>
               <div className="h-1 w-12 bg-primary" />
             </div>
             <Link href="/products" className="text-primary hover:underline font-black uppercase tracking-widest text-[10px] flex items-center gap-2">
@@ -169,7 +169,7 @@ export default function Home() {
         <div className="container mx-auto px-4 max-w-2xl">
           <div className="glass p-8 rounded-2xl text-center border-primary/20 space-y-4 relative overflow-hidden">
              <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-primary to-transparent" />
-             <h2 className="text-xl font-black uppercase italic tracking-tighter">Stay Updated</h2>
+             <h2 className="text-xl font-black uppercase italic tracking-tighter">Join the Hub</h2>
              <p className="text-muted-foreground uppercase text-[8px] tracking-widest font-bold">Get updates on new products and special offers</p>
              <form className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto" onSubmit={(e) => e.preventDefault()}>
                <input 
@@ -193,7 +193,7 @@ export default function Home() {
               </span>
             </Link>
             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">
-              High-quality gaming marketplace.
+              Premium marketplace for gaming gear.
             </p>
           </div>
           

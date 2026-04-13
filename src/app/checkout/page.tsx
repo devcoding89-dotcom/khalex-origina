@@ -39,16 +39,20 @@ export default function CheckoutPage() {
       email: formData.email,
       codUid: formData.codUid,
       codIgn: formData.codIgn,
+      total: subtotal,
+      items: cart
     });
     
     const message = `ORDER CONFIRMATION%0A` +
       `Order ID: ${order.id}%0A` +
       `Customer: ${order.customerName}%0A` +
       `Items:%0A` + 
-      order.items.map(i => `- ${i.name} x${i.quantity}`).join('%0A') + 
+      order.items.map((i: any) => `- ${i.name} x${i.quantity}`).join('%0A') + 
       `%0A%0ATotal: ${settings.currencySymbol}${order.total.toLocaleString()}%0A%0AHello, I just placed an order. Please send me payment details.`;
 
-    const waLink = `https://wa.me/${settings.whatsapp.replace(/\+/g, '')}?text=${message}`;
+    // Ensure the number is formatted correctly (strip non-digits)
+    const cleanNumber = settings.whatsapp.replace(/\D/g, '');
+    const waLink = `https://wa.me/${cleanNumber}?text=${message}`;
     
     setTimeout(() => {
       setIsSuccess(true);
