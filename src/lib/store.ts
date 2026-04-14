@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -10,7 +11,9 @@ import {
   serverTimestamp,
   limit,
   DocumentData,
-  onSnapshot
+  onSnapshot,
+  getDocs,
+  writeBatch
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -40,6 +43,7 @@ export interface Product {
   salesCount: number;
   views: number;
   createdAt: any;
+  type?: 'physical' | 'digital';
 }
 
 export interface Order {
@@ -47,12 +51,16 @@ export interface Order {
   displayId: string;
   customerName: string;
   whatsapp: string;
+  email?: string;
+  codUid?: string;
+  codIgn?: string;
   total: number;
   status: OrderStatus;
   paymentStatus: PaymentStatus;
   items: any[];
   createdAt: any;
   timeline: any[];
+  priority?: 'normal' | 'urgent';
 }
 
 export interface StoreSettings {
@@ -83,7 +91,7 @@ function sanitizeData(obj: any) {
 export function useStore() {
   const db = useFirestore();
 
-  // We use live listeners (useCollection/useDoc) which update automatically when the cloud changes.
+  // Live cloud listeners
   const productsQuery = useMemo(() => query(collection(db, 'products'), limit(500)), [db]);
   const ordersQuery = useMemo(() => query(collection(db, 'orders'), limit(200)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
@@ -97,6 +105,11 @@ export function useStore() {
     return [...productsData].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
   }, [productsData]);
 
+  const orders = useMemo(() => {
+    if (!ordersData) return [];
+    return [...ordersData].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+  }, [ordersData]);
+
   const settings: StoreSettings = settingsData || {
     storeName: 'KHALEX hub',
     whatsapp: '2349166905298',
@@ -106,6 +119,8 @@ export function useStore() {
     maintenanceMode: false,
     taxRate: 0
   };
+
+  // --- ACTIONS ---
 
   const addProduct = (p: Partial<Product>) => {
     const id = p.id || `p-${Date.now()}`;
@@ -149,8 +164,78 @@ export function useStore() {
     });
   };
 
+  const createOrder = (orderData: Partial<Order>) => {
+    const id = `ORD-${Math.floor(100000 + Math.random() * 900000)}`;
+    const ref = doc(db, 'orders', id);
+    const finalData = sanitizeData({
+      ...orderData,
+      id,
+      displayId: id,
+      status: 'pending',
+      paymentStatus: 'pending',
+      createdAt: serverTimestamp(),
+      timeline: [{
+        status: 'Order Placed',
+        timestamp: new Date().toISOString(),
+        note: 'Customer initiated mission deployment.',
+        by: 'System'
+      }]
+    });
+
+    setDoc(ref, finalData, { merge: true }).catch(err => {
+      errorEmitter.emit('permission-error', new FirestorePermissionError({
+        path: ref.path,
+        operation: 'create',
+        requestResourceData: finalData
+      }));
+    });
+    
+    // Clear cart on success
+    localStorage.setItem('khalex_cart', '[]');
+    window.dispatchEvent(new Event('storage'));
+    
+    return finalData;
+  };
+
+  const updateOrderStatus = (id: string, status: OrderStatus, note: string = '') => {
+    const ref = doc(db, 'orders', id);
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
+
+    const timelineEntry = {
+      status: status.toUpperCase(),
+      timestamp: new Date().toISOString(),
+      note: note || `Mission status updated to ${status}.`,
+      by: 'Administrator'
+    };
+
+    setDoc(ref, { 
+      status, 
+      timeline: [...(order.timeline || []), timelineEntry] 
+    }, { merge: true });
+  };
+
+  const updateOrderPaymentStatus = (id: string, paymentStatus: PaymentStatus) => {
+    const ref = doc(db, 'orders', id);
+    setDoc(ref, { paymentStatus }, { merge: true });
+  };
+
   const updateSettings = (s: StoreSettings) => {
     setDoc(settingsRef, sanitizeData(s), { merge: true });
+  };
+
+  const purgeDatabase = async () => {
+    // Clear Products
+    const prodSnap = await getDocs(collection(db, 'products'));
+    prodSnap.forEach(d => deleteDoc(doc(db, 'products', d.id)));
+
+    // Clear Orders
+    const orderSnap = await getDocs(collection(db, 'orders'));
+    orderSnap.forEach(d => deleteDoc(doc(db, 'orders', d.id)));
+
+    // Clear Customers (if implemented as a collection)
+    const custSnap = await getDocs(collection(db, 'customers'));
+    custSnap.forEach(d => deleteDoc(doc(db, 'customers', d.id)));
   };
 
   const cart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('khalex_cart') || '[]') : [];
@@ -158,18 +243,28 @@ export function useStore() {
   return {
     products,
     productsLoading,
-    orders: ordersData || [],
+    orders,
     settings,
     cart,
     addProduct,
     updateProduct,
     deleteProduct,
+    createOrder,
+    updateOrderStatus,
+    updateOrderPaymentStatus,
     updateSettings,
+    purgeDatabase,
     addToCart: (p: Product, qty: number = 1) => {
       const existing = cart.find((i: any) => i.id === p.id);
       const newCart = existing 
         ? cart.map((i: any) => i.id === p.id ? { ...i, quantity: i.quantity + qty } : i)
-        : [...cart, { ...p, quantity: qty }];
+        : [...cart, { ...sanitizeData(p), quantity: qty }];
+      localStorage.setItem('khalex_cart', JSON.stringify(newCart));
+      window.dispatchEvent(new Event('storage'));
+    },
+    updateQuantity: (id: string, qty: number) => {
+      if (qty < 1) return;
+      const newCart = cart.map((i: any) => i.id === id ? { ...i, quantity: qty } : i);
       localStorage.setItem('khalex_cart', JSON.stringify(newCart));
       window.dispatchEvent(new Event('storage'));
     },

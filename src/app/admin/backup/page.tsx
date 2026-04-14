@@ -14,22 +14,23 @@ import {
   History, 
   ShieldAlert,
   CheckCircle2,
-  FileJson
+  FileJson,
+  Loader2
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useStore } from '@/lib/store';
 
 export default function BackupPage() {
   const { toast } = useToast();
+  const { purgeDatabase, products, orders } = useStore();
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleExport = () => {
     setIsProcessing(true);
     setTimeout(() => {
       const data = {
-        products: localStorage.getItem('gz_products'),
-        orders: localStorage.getItem('gz_orders'),
-        customers: localStorage.getItem('gz_customers'),
-        settings: localStorage.getItem('gz_settings'),
+        products,
+        orders,
         timestamp: new Date().toISOString()
       };
       
@@ -37,7 +38,7 @@ export default function BackupPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `gamezone-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `khalex-hub-backup-${new Date().toISOString().split('T')[0]}.json`;
       a.click();
       
       setIsProcessing(false);
@@ -45,12 +46,19 @@ export default function BackupPage() {
     }, 1500);
   };
 
-  const handleReset = () => {
-    if (confirm("CRITICAL WARNING: This will purge ALL data from the system. This action is irreversible. Proceed?")) {
-      const password = prompt("Enter Administrator Access Code to confirm purge:");
-      if (password === 'gaming2024') {
-        localStorage.clear();
-        window.location.href = '/admin/login';
+  const handleReset = async () => {
+    if (confirm("CRITICAL WARNING: This will purge ALL cloud database data. This action is irreversible. Proceed?")) {
+      const password = prompt("Enter Administrator Access Code (gaming2025) to confirm purge:");
+      if (password === 'gaming2025') {
+        setIsProcessing(true);
+        try {
+          await purgeDatabase();
+          toast({ title: "System Purged", description: "All cloud records have been wiped." });
+        } catch (e) {
+          toast({ variant: "destructive", title: "Purge Failed", description: "Could not wipe database." });
+        } finally {
+          setIsProcessing(false);
+        }
       } else {
         alert("Access Denied. Purge Aborted.");
       }
@@ -80,7 +88,7 @@ export default function BackupPage() {
                     <FileJson className="w-8 h-8 text-primary" />
                     <div>
                       <div className="text-xs font-bold uppercase">Full System State</div>
-                      <div className="text-[8px] text-muted-foreground">INCLUDES PRODUCTS, ORDERS, CUSTOMERS</div>
+                      <div className="text-[8px] text-muted-foreground">INCLUDES PRODUCTS AND ORDERS</div>
                     </div>
                   </div>
                   <Badge className="bg-primary/20 text-primary border-none text-[8px]">STABLE</Badge>
@@ -90,7 +98,7 @@ export default function BackupPage() {
                   disabled={isProcessing}
                   className="w-full bg-primary text-primary-foreground font-black uppercase tracking-widest text-xs h-10"
                 >
-                  {isProcessing ? 'Processing...' : 'Initiate Extraction'}
+                  {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Initiate Extraction'}
                 </Button>
               </div>
             </CardContent>
@@ -124,19 +132,21 @@ export default function BackupPage() {
               <CardTitle className="text-xs font-black uppercase tracking-widest text-destructive flex items-center gap-2">
                 <ShieldAlert className="w-4 h-4" /> System Purge (Reset)
               </CardTitle>
-              <CardDescription className="text-[10px] uppercase text-destructive/80">Wipe all data and restore factory defaults</CardDescription>
+              <CardDescription className="text-[10px] uppercase text-destructive/80">Wipe all cloud data and restore factory defaults</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <p className="text-[10px] text-muted-foreground uppercase leading-relaxed font-bold italic">
-                  Performing a system purge will delete all products, clear the order manifest, and purge the personnel database. This operation is locked behind commander access.
+                  Performing a system purge will delete all products and clear the order manifest from the CLOUD. This operation is locked behind commander access.
                 </p>
                 <Button 
                   onClick={handleReset}
+                  disabled={isProcessing}
                   variant="destructive" 
                   className="w-full uppercase font-black tracking-widest text-xs h-12 shadow-[0_0_20px_rgba(255,68,68,0.2)]"
                 >
-                  <Trash2 className="w-4 h-4 mr-2" /> Execute Total Purge
+                  {isProcessing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />} 
+                  Execute Total Purge
                 </Button>
               </div>
             </CardContent>
@@ -157,7 +167,7 @@ export default function BackupPage() {
                         <CheckCircle2 className="w-3 h-3" />
                       </div>
                       <div>
-                        <div className="text-[10px] font-black uppercase">Auto-Sync Successful</div>
+                        <div className="text-[10px] font-black uppercase">Cloud-Sync Successful</div>
                         <div className="text-[8px] text-muted-foreground uppercase">{new Date(Date.now() - i*86400000).toLocaleDateString()}</div>
                       </div>
                     </div>
