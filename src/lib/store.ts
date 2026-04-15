@@ -225,17 +225,20 @@ export function useStore() {
   };
 
   const purgeDatabase = async () => {
+    const batch = writeBatch(db);
+    
     // Clear Products
     const prodSnap = await getDocs(collection(db, 'products'));
-    prodSnap.forEach(d => deleteDoc(doc(db, 'products', d.id)));
+    prodSnap.forEach(d => batch.delete(doc(db, 'products', d.id)));
 
     // Clear Orders
     const orderSnap = await getDocs(collection(db, 'orders'));
-    orderSnap.forEach(d => deleteDoc(doc(db, 'orders', d.id)));
+    orderSnap.forEach(d => batch.delete(doc(db, 'orders', d.id)));
 
-    // Clear Customers (if implemented as a collection)
-    const custSnap = await getDocs(collection(db, 'customers'));
-    custSnap.forEach(d => deleteDoc(doc(db, 'customers', d.id)));
+    // Clear Settings
+    batch.delete(settingsRef);
+
+    await batch.commit();
   };
 
   const cart = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('khalex_cart') || '[]') : [];

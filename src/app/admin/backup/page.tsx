@@ -54,8 +54,8 @@ export default function BackupPage() {
         try {
           await purgeDatabase();
           toast({ title: "System Purged", description: "All cloud records have been wiped." });
-        } catch (e) {
-          toast({ variant: "destructive", title: "Purge Failed", description: "Could not wipe database." });
+        } catch (e: any) {
+          toast({ variant: "destructive", title: "Purge Failed", description: e.message || "Could not wipe database." });
         } finally {
           setIsProcessing(false);
         }
