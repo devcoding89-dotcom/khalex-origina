@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -13,7 +12,8 @@ import {
   DocumentData,
   onSnapshot,
   getDocs,
-  writeBatch
+  writeBatch,
+  orderBy
 } from 'firebase/firestore';
 import { useFirestore, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -91,7 +91,7 @@ function sanitizeData(obj: any) {
 export function useStore() {
   const db = useFirestore();
 
-  // Live cloud listeners
+  // Live cloud listeners - Simplified queries to avoid Indexing requirement while fixing sync
   const productsQuery = useMemo(() => query(collection(db, 'products'), limit(500)), [db]);
   const ordersQuery = useMemo(() => query(collection(db, 'orders'), limit(200)), [db]);
   const settingsRef = useMemo(() => doc(db, 'settings', 'global'), [db]);
@@ -102,12 +102,22 @@ export function useStore() {
 
   const products = useMemo(() => {
     if (!productsData) return [];
-    return [...productsData].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    // Sort client-side to ensure immediate sync visibility
+    return [...productsData].sort((a, b) => {
+      const timeA = a.createdAt?.seconds || 0;
+      const timeB = b.createdAt?.seconds || 0;
+      return timeB - timeA;
+    });
   }, [productsData]);
 
   const orders = useMemo(() => {
     if (!ordersData) return [];
-    return [...ordersData].sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+    // Sort client-side
+    return [...ordersData].sort((a, b) => {
+      const timeA = a.createdAt?.seconds || 0;
+      const timeB = b.createdAt?.seconds || 0;
+      return timeB - timeA;
+    });
   }, [ordersData]);
 
   const settings: StoreSettings = settingsData || {
@@ -235,8 +245,8 @@ export function useStore() {
     const orderSnap = await getDocs(collection(db, 'orders'));
     orderSnap.forEach(d => batch.delete(doc(db, 'orders', d.id)));
 
-    // Clear Settings
-    batch.delete(settingsRef);
+    // Settings is usually kept but can be reset
+    // batch.delete(settingsRef);
 
     await batch.commit();
   };
